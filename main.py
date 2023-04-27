@@ -29,7 +29,7 @@ class SingleNeuron(nn.Linear):
 
 
 class CustomLayer(nn.Module):
-    def __init__(self, in_features: int, out_features: int, w_size: int, lr: List[float] | None = None):
+    def __init__(self, in_features: int, out_features: int, w_size: int, lr: [List[float] , None] = None):
         super().__init__()
         if not lr:
             # lr = np.power(np.random.normal(loc=1e-2, scale=5, size=(out_features,)), 2)
