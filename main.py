@@ -1,3 +1,5 @@
+import os
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -9,6 +11,7 @@ from sklearn import metrics
 from tqdm import tqdm
 from copy import deepcopy
 from torch import Tensor
+import torch.nn.functional as F
 from utils import slurm_job
 
 class SingleNeuron(nn.Linear):
@@ -24,7 +27,7 @@ class SingleNeuron(nn.Linear):
     def forward(self, input: Tensor) -> Tensor:
         output = super().forward(input)
         with torch.no_grad():
-            self.lr_result = self.lr  # * output.mean()
+            self.lr_result = F.relu6(output).mean()
         return output
 
 
@@ -232,7 +235,7 @@ def evaluate(data_dict, length=20000, batch_size=100, train_to_thresh=False, mas
     data_dict['index'].append(index)
     data_dict['hidden_size'].append(hidden_size)
     print('************************************************')
-    print('model heterogeneous custom_response')
+    print('model heterogeneous custom_response with bounded relu')
     print('************************************************')
     model_c.homogenuos_lr = False
     model_c.entropy_dependent_lr = True
@@ -261,18 +264,18 @@ def evaluate(data_dict, length=20000, batch_size=100, train_to_thresh=False, mas
     data_dict['accuracy_2'].append(accuracy_2)
     data_dict['auc_forget'].append(auc_forget)
     data_dict['accuracy_forget'].append(accuracy_forget)
-    data_dict['id'].append('heterogeneous_dynamic_weights')
+    data_dict['id'].append('heterogeneous_dynamic_weights_relu6')
     data_dict['index'].append(index)
     data_dict['hidden_size'].append(hidden_size)
 
 
-# cd = CDataLoader(500, mask_d=0.5, disperssion=10, n_batch=2000, normal_sampling=False)
-# cd.plot_data(*cd.generate_f&irst_rule_data(),500)
-# cd.plot_data(*cd.generate_second_rule_data(),500)
-# cd.plot_data(n=500)
+cd = CDataLoader(500, mask_d=0.5, disperssion=10, n_batch=2000, normal_sampling=False)
+cd.plot_data(*cd.generate_first_rule_data(),500)
+cd.plot_data(*cd.generate_second_rule_data(),500)
+cd.plot_data(n=500)
 # cd.plot_data()
 
-def evaluate_on_cluster():
+def evaluate_on_cluster(simulation_id,number_o):
     data_dict = dict(steps_1=[], steps_2=[], auc_1=[], auc_2=[], auc_forget=[], index=[], id=[], condition=[],
                      accuracy_1=[], accuracy_2=[], accuracy_forget=[],hidden_size=[])
     for i in range(100):
@@ -281,8 +284,8 @@ def evaluate_on_cluster():
         import cPickle as pickle
     except ImportError:  # Python 3.x
         import pickle
-
-    with open(f'data_{np.random.randint(0,100000)}.p', 'wb') as fp:
+    os.makedirs('data',exist_ok=True)
+    with open(os.path.join('data',f'data_{simulation_id}.p'), 'wb') as fp:
         pickle.dump(data_dict, fp, protocol=pickle.HIGHEST_PROTOCOL)
-if __name__ == '__main__':
-    slurm_job.SlurmJobFactory('cluster_logs').send_job_for_function('heterogeneous_ann_%d'%np.random.randint(0,100000),'main','evaluate_on_cluster',[])
+# if __name__ == '__main__':
+#     slurm_job.SlurmJobFactory('cluster_logs').send_job_for_function('heterogeneous_ann_%d'%np.random.randint(0,100000),'main','evaluate_on_cluster',[])
