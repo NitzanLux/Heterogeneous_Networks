@@ -12,7 +12,7 @@ from torch import Tensor
 from utils import slurm_job
 
 class SingleNeuron(nn.Linear):
-    def __init__(self, in_features: int, w_size: int, lr: None | float = None):
+    def __init__(self, in_features: int, w_size: int, lr:[None , float] = None):
         super().__init__(in_features, 1)
         if lr:
             self.lr = lr
@@ -266,8 +266,8 @@ def evaluate(data_dict, length=20000, batch_size=100, train_to_thresh=False, mas
     data_dict['hidden_size'].append(hidden_size)
 
 
-cd = CDataLoader(500, mask_d=0.5, disperssion=10, n_batch=2000, normal_sampling=False)
-# cd.plot_data(*cd.generate_first_rule_data(),500)
+# cd = CDataLoader(500, mask_d=0.5, disperssion=10, n_batch=2000, normal_sampling=False)
+# cd.plot_data(*cd.generate_f&irst_rule_data(),500)
 # cd.plot_data(*cd.generate_second_rule_data(),500)
 # cd.plot_data(n=500)
 # cd.plot_data()
