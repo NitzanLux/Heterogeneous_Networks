@@ -9,7 +9,7 @@ from sklearn import metrics
 from tqdm import tqdm
 from copy import deepcopy
 from torch import Tensor
-
+from utils import slurm_job
 
 class SingleNeuron(nn.Linear):
     def __init__(self, in_features: int, w_size: int, lr: None | float = None):
@@ -122,8 +122,10 @@ def train(model, data_loader, test_data, train_to_thresh=False):
             prd_m = prd_m.detach().numpy()
 
             fpr, tpr, thresholds = metrics.roc_curve(y.astype(bool), prd_m, pos_label=1)
-            auc = metrics.auc(fpr, tpr)
-            if auc > 0.99999:
+            # auc = metrics.auc(fpr, tpr)
+            t = thresholds[np.argmax(tpr - fpr)]
+            accuracy = np.linalg.norm((prd_m < t) - y, 1) / y.size
+            if accuracy == 1:
                 break
         model.train()
     return convergence_arr_train, convergence_arr_test, counter
@@ -155,8 +157,9 @@ def test(model, first_task=True):
     t = thresholds[np.argmax(tpr - fpr)]
     auc = metrics.auc(fpr, tpr)
     print('\nauc: ', auc)
-    print('accuracy: ', np.linalg.norm((pred < t) - y, 1) / y.size, '%')
-    return np.linalg.norm((pred < t) - y, 1) / y.size, auc
+    accuracy =  np.linalg.norm((pred < t) - y, 1) / y.size
+    print('accuracy: ', accuracy, '%')
+    return accuracy, auc
 
 
 def evaluate(data_dict, length=20000, batch_size=100, train_to_thresh=False, mask_d=0.4, disperssion=0.4, index=0):
@@ -265,15 +268,18 @@ cd = CDataLoader(500, mask_d=0.5, disperssion=10, n_batch=2000, normal_sampling=
 # cd.plot_data(*cd.generate_second_rule_data(),500)
 # cd.plot_data(n=500)
 # cd.plot_data()
-data_dict = dict(steps_1=[], steps_2=[], auc_1=[], auc_2=[], auc_forget=[], index=[], id=[], condition=[],
-                 accuracy_1=[], accuracy_2=[], accuracy_forget=[])
 
-for i in range(1000):
-    evaluate(data_dict, 500, 10, train_to_thresh=True, mask_d=0.5, disperssion=10,index=i)
-try:
-    import cPickle as pickle
-except ImportError:  # Python 3.x
-    import pickle
+def evaluate_on_cluster():
+    data_dict = dict(steps_1=[], steps_2=[], auc_1=[], auc_2=[], auc_forget=[], index=[], id=[], condition=[],
+                     accuracy_1=[], accuracy_2=[], accuracy_forget=[])
+    for i in range(1000):
+        evaluate(data_dict, 500, 10, train_to_thresh=True, mask_d=0.5, disperssion=10,index=i)
+    try:
+        import cPickle as pickle
+    except ImportError:  # Python 3.x
+        import pickle
 
-with open(f'data_{np.random.randint(0,100000)}.p', 'wb') as fp:
-    pickle.dump(data_dict, fp, protocol=pickle.HIGHEST_PROTOCOL)
+    with open(f'data_{np.random.randint(0,100000)}.p', 'wb') as fp:
+        pickle.dump(data_dict, fp, protocol=pickle.HIGHEST_PROTOCOL)
+if __name__ == '__main__':
+    slurm_job.SlurmJobFactory('cluster_logs').send_job_for_function('heterogeneous_ann_1','main.py','evaluate_on_cluster',[])
