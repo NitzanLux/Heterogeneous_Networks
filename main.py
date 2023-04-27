@@ -37,7 +37,7 @@ class CustomLayer(nn.Module):
         if not lr:
             # lr = np.power(np.random.normal(loc=1e-2, scale=5, size=(out_features,)), 2)
             # lr = np.random.exponential(scale=1e-2, size=(out_features,))
-            lr = np.random.gamma(1.2,scale=1.65, size=(out_features,))
+            lr = np.random.gamma(0.12,scale=0.165, size=(out_features,))
             # lr = -np.ones((out_features,))
             # lr = np.exp(-np.arange(out_features))
             # lr[lr<0.5]=np.exp(lr[lr<0.5])
