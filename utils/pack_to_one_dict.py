@@ -32,6 +32,8 @@ for base_folder in os.listdir('data') + ['summaries']:
                     break
             else:
                 for k, v in cur_data.items():
+                    if k == 'condition': continue
+
                     data[k].extend(v)
 
     dest_path = os.path.join('data', 'summaries')
