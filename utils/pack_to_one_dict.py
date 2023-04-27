@@ -21,6 +21,7 @@ for base_folder in os.listdir('data'):
                 if length is None:
                     length = len(cur_data[k])
                 if length!=len(cur_data[k]):
+                    print("\n".join(["%s - %d"%(i,len(cur_data[k])) for i in cur_data.keys()]))
                     break
             else:
                 for k,v in cur_data.items():
