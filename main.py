@@ -279,7 +279,7 @@ def evaluate_on_cluster(data_folder,simulation_id,number_of_sims):
     data_dict = dict(steps_1=[], steps_2=[], auc_1=[], auc_2=[], auc_forget=[], index=[], id=[],
                      accuracy_1=[], accuracy_2=[], accuracy_forget=[],hidden_size=[])
     for i in range(number_of_sims):
-        evaluate(data_dict, 500, 10, train_to_thresh=True, mask_d=0.5, disperssion=10,index=i)
+        evaluate(data_dict, 500, batch_size=10, train_to_thresh=True, mask_d=0.5, disperssion=10,index=i)
     try:
         import cPickle as pickle
     except ImportError:  # Python 3.x
