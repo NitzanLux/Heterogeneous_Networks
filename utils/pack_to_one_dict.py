@@ -18,6 +18,7 @@ for base_folder in os.listdir('data'):
         else:
             length=None
             for k in cur_data.keys():
+                if k=='condition': continue
                 if length is None:
                     length = len(cur_data[k])
                 if length==0:
