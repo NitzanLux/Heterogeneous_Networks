@@ -285,4 +285,4 @@ def evaluate_on_cluster():
     with open(f'data_{np.random.randint(0,100000)}.p', 'wb') as fp:
         pickle.dump(data_dict, fp, protocol=pickle.HIGHEST_PROTOCOL)
 if __name__ == '__main__':
-    slurm_job.SlurmJobFactory('cluster_logs').send_job_for_function('heterogeneous_ann_1','main.py','evaluate_on_cluster',[])
+    slurm_job.SlurmJobFactory('cluster_logs').send_job_for_function('heterogeneous_ann_%d'%np.random.randint(0,100000),'main.py','evaluate_on_cluster',[])
