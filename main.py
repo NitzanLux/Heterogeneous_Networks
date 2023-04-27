@@ -292,4 +292,4 @@ if __name__ == '__main__':
     simulation_id=np.random.randint(0,10000)
     for i in range(50):
         cur_id = simulation_id+i
-        slurm_job.SlurmJobFactory('cluster_logs').send_job_for_function('heterogeneous_ann_%d'%cur_id,'main','evaluate_on_cluster',[f'data_{simulation_id}'cur_id,3])
+        slurm_job.SlurmJobFactory('cluster_logs').send_job_for_function('heterogeneous_ann_%d'%cur_id,'main','evaluate_on_cluster',[f'data_{simulation_id}',cur_id,3])
