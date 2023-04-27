@@ -36,7 +36,8 @@ class CustomLayer(nn.Module):
         super().__init__()
         if not lr:
             # lr = np.power(np.random.normal(loc=1e-2, scale=5, size=(out_features,)), 2)
-            lr = np.random.exponential(scale=1e-2, size=(out_features,))
+            # lr = np.random.exponential(scale=1e-2, size=(out_features,))
+            lr = np.random.gamma(1.2,scale=1.65, size=(out_features,))
             # lr = -np.ones((out_features,))
             # lr = np.exp(-np.arange(out_features))
             # lr[lr<0.5]=np.exp(lr[lr<0.5])
@@ -134,9 +135,7 @@ def train(model, data_loader, test_data, train_to_thresh=False):
     return convergence_arr_train, convergence_arr_test, counter
 
 
-input_size = 2
-hidden_size = 100
-output_size = 1
+
 
 
 # model = CustomNetwork(input_size, hidden_size, output_size)
@@ -165,7 +164,143 @@ def test(model, first_task=True):
     return accuracy, auc
 
 
-def evaluate(data_dict, length=20000, batch_size=100, train_to_thresh=False, mask_d=0.4, disperssion=0.4, index=0):
+# def evaluate(data_dict, length=20000, batch_size=100, train_to_thresh=False, mask_d=0.4, disperssion=0.4, index=0):
+#     print('************************************************')
+#     print('model homogeneuos')
+#     print('************************************************')
+#     model = CustomNetwork(input_size, hidden_size, output_size, homogenuos_lr=True)
+#     model.init_weights()
+#     model_b = deepcopy(model)
+#     model_c = deepcopy(model)
+#     if train_to_thresh:
+#         length = 1000000000000000
+#     train_data = CDataLoader(batch_size, mask_d=mask_d, n_batch=length, disperssion=disperssion)
+#     test_data = CDataLoader(1000, mask_d=mask_d, n_batch=length, disperssion=disperssion)
+#     _, _, steps_1 = train(model, train_data, test_data, train_to_thresh)
+#     print('step 1:  ', steps_1)
+#     accuracy_1, auc_1 = test(model)
+#     train_data.switch()
+#     test_data.switch()
+#     _, _, steps_2 = train(model, train_data, test_data, train_to_thresh)
+#     print('step 2:  ', steps_2)
+#     accuracy_2, auc_2 = test(model, False)
+#     print("--------------------first task")
+#     accuracy_forget, auc_forget = test(model)
+#     data_dict['steps_1'].append(steps_1)
+#     data_dict['steps_2'].append(steps_2)
+#     data_dict['auc_1'].append(auc_1)
+#     data_dict['accuracy_1'].append(accuracy_1)
+#     data_dict['auc_2'].append(auc_2)
+#     data_dict['accuracy_2'].append(accuracy_2)
+#     data_dict['auc_forget'].append(auc_forget)
+#     data_dict['accuracy_forget'].append(accuracy_forget)
+#     data_dict['id'].append('original')
+#     data_dict['index'].append(index)
+#     data_dict['hidden_size'].append(hidden_size)
+#
+#     print('\n************************************************')
+#
+#     print('model heterogeneous')
+#     print('************************************************')
+#     model_b.homogenuos_lr = False
+#     model_b.entropy_dependent_lr = False
+#
+#     # model.init_weights()
+#
+#     train_data = CDataLoader(batch_size, mask_d=mask_d, n_batch=length, disperssion=disperssion)
+#     test_data = CDataLoader(1000, mask_d=mask_d, n_batch=length, disperssion=disperssion)
+#     _, _, steps_1 = train(model_b, train_data, test_data, train_to_thresh)
+#     print('step 1:  ', steps_1)
+#
+#     accuracy_1, auc_1 = test(model_b)
+#     train_data.switch()
+#     test_data.switch()
+#     _, _, steps_2 = train(model_b, train_data, test_data, train_to_thresh)
+#     print('step 2:  ', steps_2)
+#
+#     accuracy_2, auc_2 = test(model_b, False)
+#     print("--------------------first task")
+#     accuracy_forget, auc_forget = test(model_c)
+#
+#     data_dict['steps_1'].append(steps_1)
+#     data_dict['steps_2'].append(steps_2)
+#     data_dict['auc_1'].append(auc_1)
+#     data_dict['accuracy_1'].append(accuracy_1)
+#     data_dict['auc_2'].append(auc_2)
+#     data_dict['accuracy_2'].append(accuracy_2)
+#     data_dict['auc_forget'].append(auc_forget)
+#     data_dict['accuracy_forget'].append(accuracy_forget)
+#     data_dict['id'].append('heterogeneous_constant')
+#     data_dict['index'].append(index)
+#     data_dict['hidden_size'].append(hidden_size)
+#     print('************************************************')
+#     print('model heterogeneous custom_response with bounded relu')
+#     print('************************************************')
+#     model_c.homogenuos_lr = False
+#     model_c.entropy_dependent_lr = True
+#     # model.init_weights()
+#
+#     train_data = CDataLoader(batch_size, mask_d=mask_d, n_batch=length, disperssion=disperssion)
+#     test_data = CDataLoader(1000, mask_d=mask_d, n_batch=length, disperssion=disperssion)
+#     _, _, steps_1 = train(model_c, train_data, test_data, train_to_thresh)
+#     print('step 1:  ', steps_1)
+#
+#     accuracy_1, auc_1 = test(model_c)
+#     train_data.switch()
+#     test_data.switch()
+#     _, _, steps_2 = train(model_c, train_data, test_data, train_to_thresh)
+#     print('step 2:  ', steps_2)
+#
+#     accuracy_2, auc_2 = test(model_c, False)
+#     print("--------------------first task")
+#     accuracy_forget, auc_forget= test(model_c)
+#
+#     data_dict['steps_1'].append(steps_1)
+#     data_dict['steps_2'].append(steps_2)
+#     data_dict['auc_1'].append(auc_1)
+#     data_dict['accuracy_1'].append(accuracy_1)
+#     data_dict['auc_2'].append(auc_2)
+#     data_dict['accuracy_2'].append(accuracy_2)
+#     data_dict['auc_forget'].append(auc_forget)
+#     data_dict['accuracy_forget'].append(accuracy_forget)
+#     data_dict['id'].append('heterogeneous_dynamic_weights_relu6')
+#     data_dict['index'].append(index)
+#     data_dict['hidden_size'].append(hidden_size)
+def evaluate_model(model, model_id, train_to_thresh, mask_d, disperssion, length, batch_size, index, data_dict,input_size,hidden_size,output_size,tag):
+    if train_to_thresh:
+        length = 1000000000000000
+    train_data = CDataLoader(batch_size, mask_d=mask_d, n_batch=length, disperssion=disperssion)
+    test_data = CDataLoader(1000, mask_d=mask_d, n_batch=length, disperssion=disperssion)
+    _, _, steps_1 = train(model, train_data, test_data, train_to_thresh)
+    print('step 1:  ', steps_1)
+
+    accuracy_1, auc_1 = test(model)
+    train_data.switch()
+    test_data.switch()
+    _, _, steps_2 = train(model, train_data, test_data, train_to_thresh)
+    print('step 2:  ', steps_2)
+
+    accuracy_2, auc_2 = test(model, False)
+    print("--------------------first task")
+    accuracy_forget, auc_forget = test(model)
+
+    data_dict['steps_1'].append(steps_1)
+    data_dict['steps_2'].append(steps_2)
+    data_dict['auc_1'].append(auc_1)
+    data_dict['accuracy_1'].append(accuracy_1)
+    data_dict['auc_2'].append(auc_2)
+    data_dict['accuracy_2'].append(accuracy_2)
+    data_dict['auc_forget'].append(auc_forget)
+    data_dict['accuracy_forget'].append(accuracy_forget)
+    data_dict['id'].append(model_id)
+    data_dict['index'].append(index)
+    data_dict['hidden_size'].append(hidden_size)
+    data_dict['batch_size'].append(batch_size)
+    data_dict['tag'].append(tag)
+
+    return data_dict
+
+def evaluate(data_dict,input_size,hidden_size,output_size, length=20000, batch_size=100, train_to_thresh=False, mask_d=0.4, disperssion=0.4, index=0,tag=''):
     print('************************************************')
     print('model homogeneuos')
     print('************************************************')
@@ -173,100 +308,30 @@ def evaluate(data_dict, length=20000, batch_size=100, train_to_thresh=False, mas
     model.init_weights()
     model_b = deepcopy(model)
     model_c = deepcopy(model)
-    if train_to_thresh:
-        length = 1000000000000000
-    train_data = CDataLoader(batch_size, mask_d=mask_d, n_batch=length, disperssion=disperssion)
-    test_data = CDataLoader(1000, mask_d=mask_d, n_batch=length, disperssion=disperssion)
-    _, _, steps_1 = train(model, train_data, test_data, train_to_thresh)
-    print('step 1:  ', steps_1)
-    accuracy_1, auc_1 = test(model)
-    train_data.switch()
-    test_data.switch()
-    _, _, steps_2 = train(model, train_data, test_data, train_to_thresh)
-    print('step 2:  ', steps_2)
-    accuracy_2, auc_2 = test(model, False)
-    print("--------------------first task")
-    accuracy_forget, auc_forget = test(model)
-    data_dict['steps_1'].append(steps_1)
-    data_dict['steps_2'].append(steps_2)
-    data_dict['auc_1'].append(auc_1)
-    data_dict['accuracy_1'].append(accuracy_1)
-    data_dict['auc_2'].append(auc_2)
-    data_dict['accuracy_2'].append(accuracy_2)
-    data_dict['auc_forget'].append(auc_forget)
-    data_dict['accuracy_forget'].append(accuracy_forget)
-    data_dict['id'].append('original')
-    data_dict['index'].append(index)
-    data_dict['hidden_size'].append(hidden_size)
+
+    data_dict = evaluate_model(model, 'original', train_to_thresh, mask_d, disperssion, length, batch_size, index, data_dict,input_size,hidden_size,output_size,tag)
 
     print('\n************************************************')
-
     print('model heterogeneous')
     print('************************************************')
     model_b.homogenuos_lr = False
     model_b.entropy_dependent_lr = False
 
-    # model.init_weights()
+    data_dict = evaluate_model(model_b, 'heterogeneous_constant', train_to_thresh, mask_d, disperssion, length, batch_size, index, data_dict,input_size,hidden_size,output_size,tag)
 
-    train_data = CDataLoader(batch_size, mask_d=mask_d, n_batch=length, disperssion=disperssion)
-    test_data = CDataLoader(1000, mask_d=mask_d, n_batch=length, disperssion=disperssion)
-    _, _, steps_1 = train(model_b, train_data, test_data, train_to_thresh)
-    print('step 1:  ', steps_1)
-
-    accuracy_1, auc_1 = test(model_b)
-    train_data.switch()
-    test_data.switch()
-    _, _, steps_2 = train(model_b, train_data, test_data, train_to_thresh)
-    print('step 2:  ', steps_2)
-
-    accuracy_2, auc_2 = test(model_b, False)
-    print("--------------------first task")
-    accuracy_forget, auc_forget = test(model_c)
-
-    data_dict['steps_1'].append(steps_1)
-    data_dict['steps_2'].append(steps_2)
-    data_dict['auc_1'].append(auc_1)
-    data_dict['accuracy_1'].append(accuracy_1)
-    data_dict['auc_2'].append(auc_2)
-    data_dict['accuracy_2'].append(accuracy_2)
-    data_dict['auc_forget'].append(auc_forget)
-    data_dict['accuracy_forget'].append(accuracy_forget)
-    data_dict['id'].append('heterogeneous_constant')
-    data_dict['index'].append(index)
-    data_dict['hidden_size'].append(hidden_size)
     print('************************************************')
     print('model heterogeneous custom_response with bounded relu')
     print('************************************************')
     model_c.homogenuos_lr = False
     model_c.entropy_dependent_lr = True
-    # model.init_weights()
 
-    train_data = CDataLoader(batch_size, mask_d=mask_d, n_batch=length, disperssion=disperssion)
-    test_data = CDataLoader(1000, mask_d=mask_d, n_batch=length, disperssion=disperssion)
-    _, _, steps_1 = train(model_c, train_data, test_data, train_to_thresh)
-    print('step 1:  ', steps_1)
+    data_dict = evaluate_model(model_c, 'heterogeneous_dynamic_weights_relu6', train_to_thresh, mask_d, disperssion, length, batch_size, index, data_dict,input_size,hidden_size,output_size,tag)
 
-    accuracy_1, auc_1 = test(model_c)
-    train_data.switch()
-    test_data.switch()
-    _, _, steps_2 = train(model_c, train_data, test_data, train_to_thresh)
-    print('step 2:  ', steps_2)
+    return data_dict
 
-    accuracy_2, auc_2 = test(model_c, False)
-    print("--------------------first task")
-    accuracy_forget, auc_forget= test(model_c)
-
-    data_dict['steps_1'].append(steps_1)
-    data_dict['steps_2'].append(steps_2)
-    data_dict['auc_1'].append(auc_1)
-    data_dict['accuracy_1'].append(accuracy_1)
-    data_dict['auc_2'].append(auc_2)
-    data_dict['accuracy_2'].append(accuracy_2)
-    data_dict['auc_forget'].append(auc_forget)
-    data_dict['accuracy_forget'].append(accuracy_forget)
-    data_dict['id'].append('heterogeneous_dynamic_weights_relu6')
-    data_dict['index'].append(index)
-    data_dict['hidden_size'].append(hidden_size)
+input_size = 2
+hidden_size = 100
+output_size = 1
 
 
 cd = CDataLoader(500, mask_d=0.5, disperssion=10, n_batch=2000, normal_sampling=False)
@@ -274,19 +339,19 @@ cd.plot_data(*cd.generate_first_rule_data(),500)
 cd.plot_data(*cd.generate_second_rule_data(),500)
 cd.plot_data(n=500)
 # cd.plot_data()
-
+tag='gamma'
 def evaluate_on_cluster(data_folder,simulation_id,number_of_sims):
     data_dict = dict(steps_1=[], steps_2=[], auc_1=[], auc_2=[], auc_forget=[], index=[], id=[],
-                     accuracy_1=[], accuracy_2=[], accuracy_forget=[],hidden_size=[])
+                     accuracy_1=[], accuracy_2=[], accuracy_forget=[],hidden_size=[],batch_size=[],tag=[])
     for i in range(number_of_sims):
-        evaluate(data_dict, 500, batch_size=10, train_to_thresh=True, mask_d=0.5, disperssion=10,index=i)
+        evaluate(data_dict,input_size,hidden_size,output_size, batch_size=10, train_to_thresh=True, mask_d=0.5, disperssion=10,index=i,tag=tag)
     try:
         import cPickle as pickle
     except ImportError:  # Python 3.x
         import pickle
     cur_path=os.path.join('data',data_folder)
     os.makedirs(cur_path,exist_ok=True)
-    with open(os.path.join(cur_path,f'data_{simulation_id}.p'), 'wb') as fp:
+    with open(os.path.join(cur_path,f'data_{tag}_{simulation_id}.p'), 'wb') as fp:
         pickle.dump(data_dict, fp, protocol=pickle.HIGHEST_PROTOCOL)
 if __name__ == '__main__':
     simulation_id=np.random.randint(0,10000)
