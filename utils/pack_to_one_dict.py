@@ -4,7 +4,7 @@ try:
     import cPickle as pickle
 except ImportError:  # Python 3.x
     import pickle
-os.makedirs(os.path.join('data','summaries'), exist_ok=True)
+# os.makedirs(os.path.join('data','summaries'), exist_ok=True)
 for base_folder in os.listdir('data'):
     cur_path=os.path.join('data',base_folder)
     data=None
@@ -20,6 +20,8 @@ for base_folder in os.listdir('data'):
             for k in cur_data.keys():
                 if length is None:
                     length = len(cur_data[k])
+                if length==0:
+                    break
                 if length!=len(cur_data[k]):
                     print("\n".join(["%s - %d"%(i,len(cur_data[k])) for i in cur_data.keys()]))
                     break
