@@ -16,3 +16,7 @@ for base_folder in os.listdir('data'):
         else:
             for k,v in cur_data.items():
                 data[k].append(v)
+    dest_path=os.path.join('data','summaries')
+    os.makedirs(dest_path,exist_ok=True)
+    with open(os.path.join(dest_path,f'{base_folder}.p'), 'wb') as fp:
+        pickle.dump(data, fp, protocol=pickle.HIGHEST_PROTOCOL)
