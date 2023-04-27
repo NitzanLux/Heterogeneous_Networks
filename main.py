@@ -272,7 +272,7 @@ cd = CDataLoader(500, mask_d=0.5, disperssion=10, n_batch=2000, normal_sampling=
 def evaluate_on_cluster():
     data_dict = dict(steps_1=[], steps_2=[], auc_1=[], auc_2=[], auc_forget=[], index=[], id=[], condition=[],
                      accuracy_1=[], accuracy_2=[], accuracy_forget=[])
-    for i in range(1000):
+    for i in range(100):
         evaluate(data_dict, 500, 10, train_to_thresh=True, mask_d=0.5, disperssion=10,index=i)
     try:
         import cPickle as pickle
