@@ -275,7 +275,7 @@ cd.plot_data(*cd.generate_second_rule_data(),500)
 cd.plot_data(n=500)
 # cd.plot_data()
 
-def evaluate_on_cluster(simulation_id,number_of_sims):
+def evaluate_on_cluster(data_folder,simulation_id,number_of_sims):
     data_dict = dict(steps_1=[], steps_2=[], auc_1=[], auc_2=[], auc_forget=[], index=[], id=[], condition=[],
                      accuracy_1=[], accuracy_2=[], accuracy_forget=[],hidden_size=[])
     for i in range(number_of_sims):
@@ -284,11 +284,12 @@ def evaluate_on_cluster(simulation_id,number_of_sims):
         import cPickle as pickle
     except ImportError:  # Python 3.x
         import pickle
-    os.makedirs('data',exist_ok=True)
-    with open(os.path.join('data',f'data_{simulation_id}.p'), 'wb') as fp:
+    cur_path=os.path.join('data',data_folder)
+    os.makedirs(cur_path,exist_ok=True)
+    with open(os.path.join(cur_path,f'data_{simulation_id}.p'), 'wb') as fp:
         pickle.dump(data_dict, fp, protocol=pickle.HIGHEST_PROTOCOL)
 if __name__ == '__main__':
     simulation_id=np.random.randint(0,10000)
     for i in range(50):
         cur_id = simulation_id+i
-        slurm_job.SlurmJobFactory('cluster_logs').send_job_for_function('heterogeneous_ann_%d'%cur_id,'main','evaluate_on_cluster',[cur_id,3])
+        slurm_job.SlurmJobFactory('cluster_logs').send_job_for_function('heterogeneous_ann_%d'%cur_id,'main','evaluate_on_cluster',[f'data_{simulation_id}'cur_id,3])
