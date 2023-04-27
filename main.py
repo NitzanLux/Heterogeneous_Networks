@@ -135,7 +135,7 @@ def train(model, data_loader, test_data, train_to_thresh=False):
 
 
 input_size = 2
-hidden_size = 10
+hidden_size = 100
 output_size = 1
 
 
