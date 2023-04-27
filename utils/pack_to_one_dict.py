@@ -28,7 +28,7 @@ for base_folder in os.listdir('data'):
                     break
             else:
                 for k,v in cur_data.items():
-                    data[k].append(v)
+                    data[k].extend(v)
 
     dest_path=os.path.join('data','summaries')
     os.makedirs(dest_path,exist_ok=True)
