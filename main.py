@@ -194,6 +194,7 @@ def evaluate(data_dict, length=20000, batch_size=100, train_to_thresh=False, mas
     data_dict['accuracy_forget'].append(accuracy_forget)
     data_dict['id'].append('original')
     data_dict['index'].append(index)
+    data_dict['hidden_size'].append(hidden_size)
 
     print('\n************************************************')
 
@@ -229,6 +230,7 @@ def evaluate(data_dict, length=20000, batch_size=100, train_to_thresh=False, mas
     data_dict['accuracy_forget'].append(accuracy_forget)
     data_dict['id'].append('heterogeneous_constant')
     data_dict['index'].append(index)
+    data_dict['hidden_size'].append(hidden_size)
     print('************************************************')
     print('model heterogeneous custom_response')
     print('************************************************')
@@ -261,6 +263,7 @@ def evaluate(data_dict, length=20000, batch_size=100, train_to_thresh=False, mas
     data_dict['accuracy_forget'].append(accuracy_forget)
     data_dict['id'].append('heterogeneous_dynamic_weights')
     data_dict['index'].append(index)
+    data_dict['hidden_size'].append(hidden_size)
 
 
 cd = CDataLoader(500, mask_d=0.5, disperssion=10, n_batch=2000, normal_sampling=False)
@@ -271,7 +274,7 @@ cd = CDataLoader(500, mask_d=0.5, disperssion=10, n_batch=2000, normal_sampling=
 
 def evaluate_on_cluster():
     data_dict = dict(steps_1=[], steps_2=[], auc_1=[], auc_2=[], auc_forget=[], index=[], id=[], condition=[],
-                     accuracy_1=[], accuracy_2=[], accuracy_forget=[])
+                     accuracy_1=[], accuracy_2=[], accuracy_forget=[],hidden_size=[])
     for i in range(100):
         evaluate(data_dict, 500, 10, train_to_thresh=True, mask_d=0.5, disperssion=10,index=i)
     try:
