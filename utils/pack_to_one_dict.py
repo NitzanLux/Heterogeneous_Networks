@@ -7,7 +7,7 @@ except ImportError:  # Python 3.x
 # os.makedirs(os.path.join('data','summaries'), exist_ok=True)
 summaries_flag = True
 
-keys = set()
+# keys = set()
 base_folder_keys_dict=dict()
 for base_folder in os.listdir('data') + ['summaries']:
     if base_folder == 'summaries' and summaries_flag:
@@ -22,7 +22,7 @@ for base_folder in os.listdir('data') + ['summaries']:
         with open(os.path.join(cur_path, i), 'rb') as fp:
             cur_data = pickle.load(fp)
         base_folder_keys_dict[base_folder].update(cur_data.keys())
-        keys.update(cur_data.keys())
+        # keys.update(cur_data.keys())
 for base_folder in os.listdir('data') + ['summaries']:
     if base_folder == 'summaries' and summaries_flag:
         summaries_flag=False
@@ -46,7 +46,7 @@ for base_folder in os.listdir('data') + ['summaries']:
                 print("\n".join(["%s - %d" % (i, len(cur_data[k])) for i in cur_data.keys()]))
                 break
         else:
-            for k in keys:
+            for k in base_folder_keys_dict[base_folder]:
                 if k == 'condition': continue
                 if k in cur_data:
                     data[k].extend(cur_data[k])
