@@ -28,7 +28,7 @@ for base_folder in os.listdir('data') + ['summaries']:
         summaries_flag=False
         continue
     cur_path = os.path.join('data', base_folder)
-    data = {k:[] for i in base_folder_keys_dict[base_folder]}
+    data = {k:[] for k in base_folder_keys_dict[base_folder]}
     for i in os.listdir(cur_path):
         if i == 'summaries':
             continue
