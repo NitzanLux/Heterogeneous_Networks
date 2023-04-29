@@ -6,6 +6,20 @@ except ImportError:  # Python 3.x
     import pickle
 # os.makedirs(os.path.join('data','summaries'), exist_ok=True)
 summaries_flag = True
+
+keys = set()
+for base_folder in os.listdir('data') + ['summaries']:
+    if base_folder == 'summaries' and summaries_flag:
+        summaries_flag=False
+        continue
+    cur_path = os.path.join('data', base_folder)
+    data = None
+    for i in os.listdir(cur_path):
+        if i == 'summaries':
+            continue
+        with open(os.path.join(cur_path, i), 'rb') as fp:
+            cur_data = pickle.load(fp)
+        keys.update(cur_data.keys())
 for base_folder in os.listdir('data') + ['summaries']:
     if base_folder == 'summaries' and summaries_flag:
         summaries_flag=False
@@ -31,10 +45,12 @@ for base_folder in os.listdir('data') + ['summaries']:
                     print("\n".join(["%s - %d" % (i, len(cur_data[k])) for i in cur_data.keys()]))
                     break
             else:
-                for k, v in cur_data.items():
+                for k in keys:
                     if k == 'condition': continue
-
-                    data[k].extend(v)
+                    if k in cur_data:
+                        data[k].extend(cur_data[v])
+                    else:
+                        data[k].extend([None]*length)
 
     dest_path = os.path.join('data', 'summaries')
     os.makedirs(dest_path, exist_ok=True)
