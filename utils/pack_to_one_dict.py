@@ -8,31 +8,34 @@ except ImportError:  # Python 3.x
 summaries_flag = True
 
 keys = set()
+base_folder_keys_dict=dict()
 for base_folder in os.listdir('data') + ['summaries']:
     if base_folder == 'summaries' and summaries_flag:
         summaries_flag=False
         continue
     cur_path = os.path.join('data', base_folder)
     data = None
+    base_folder_keys_dict[base_folder]=set()
     for i in os.listdir(cur_path):
         if i == 'summaries':
             continue
         with open(os.path.join(cur_path, i), 'rb') as fp:
             cur_data = pickle.load(fp)
+        base_folder_keys_dict[base_folder].update(cur_data.keys())
         keys.update(cur_data.keys())
 for base_folder in os.listdir('data') + ['summaries']:
     if base_folder == 'summaries' and summaries_flag:
         summaries_flag=False
         continue
     cur_path = os.path.join('data', base_folder)
-    data = None
+    data = {k:[] for i in base_folder_keys_dict[base_folder]}
     for i in os.listdir(cur_path):
         if i == 'summaries':
             continue
         with open(os.path.join(cur_path, i), 'rb') as fp:
             cur_data = pickle.load(fp)
-        if data is None:
-            data = cur_data
+        # if data is None:
+        #     data = cur_data
         else:
             length = None
             for k in cur_data.keys():
