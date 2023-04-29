@@ -48,7 +48,7 @@ for base_folder in os.listdir('data') + ['summaries']:
                 for k in keys:
                     if k == 'condition': continue
                     if k in cur_data:
-                        data[k].extend(cur_data[v])
+                        data[k].extend(cur_data[k])
                     else:
                         data[k].extend([None]*length)
 
