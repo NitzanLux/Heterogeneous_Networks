@@ -36,24 +36,22 @@ for base_folder in os.listdir('data') + ['summaries']:
             cur_data = pickle.load(fp)
         # if data is None:
         #     data = cur_data
+        length = None
+        for k in cur_data.keys():
+            if length is None:
+                length = len(cur_data[k])
+            if length == 0:
+                break
+            if length != len(cur_data[k]):
+                print("\n".join(["%s - %d" % (i, len(cur_data[k])) for i in cur_data.keys()]))
+                break
         else:
-            length = None
-            for k in cur_data.keys():
+            for k in keys:
                 if k == 'condition': continue
-                if length is None:
-                    length = len(cur_data[k])
-                if length == 0:
-                    break
-                if length != len(cur_data[k]):
-                    print("\n".join(["%s - %d" % (i, len(cur_data[k])) for i in cur_data.keys()]))
-                    break
-            else:
-                for k in keys:
-                    if k == 'condition': continue
-                    if k in cur_data:
-                        data[k].extend(cur_data[k])
-                    else:
-                        data[k].extend([None]*length)
+                if k in cur_data:
+                    data[k].extend(cur_data[k])
+                else:
+                    data[k].extend([None]*length)
 
     dest_path = os.path.join('data', 'summaries')
     os.makedirs(dest_path, exist_ok=True)
