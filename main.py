@@ -340,7 +340,7 @@ cd.plot_data(*cd.generate_first_rule_data(),500)
 cd.plot_data(*cd.generate_second_rule_data(),500)
 cd.plot_data(n=500)
 # cd.plot_data()
-tag='gamma'
+tag='gamma_immidiate_reponse'
 
 def evaluate_on_cluster(data_folder,simulation_id,number_of_sims):
     data_dict = dict(steps_1=[], steps_2=[], auc_1=[], auc_2=[], auc_forget=[], index=[], id=[],
