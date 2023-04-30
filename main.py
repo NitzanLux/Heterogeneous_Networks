@@ -74,7 +74,7 @@ class CustomNetwork(nn.Module):
     def get_optimizer(self):
         if self.homogeneous_lr:
             return optim.SGD(self.parameters(), lr=1e-2)
-        return optim.SGD(self.generate_lr_params(), lr=0)
+        return optim.SGD(self.generate_lr_params(), lr=1e-2)
 
     def init_weights(self):
         def _init_weights(m):
@@ -106,9 +106,10 @@ def train(model, data_loader, test_data, train_to_thresh=False):
 
     counter = 0
     for d_input, target in tqdm(data_loader):
+
+        pred = model(d_input)
         optimizer = model.get_optimizer()
         optimizer.zero_grad()
-        pred = model(d_input)
         loss = custom_loss_function(pred, target)
         # print('train: ',loss.item())
         convergence_arr_train.append(loss.item())
