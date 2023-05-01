@@ -21,13 +21,13 @@ class SingleNeuron(nn.Linear):
             self.lr = lr
         else:
             self.lr = np.random.random(1) * 0.4
-        # self.w=np.random.normal(0,1,size=w_size)
+        self.weights=torch.normal(mean=torch.zeros((1,w_size)), std=torch.ones((1,w_size)))# self.w=np.random.normal(0,1,size=w_size)
         self.lr_result = lr
 
     def forward(self, input: Tensor) -> Tensor:
         output = super().forward(input)
         with torch.no_grad():
-            self.lr_result = F.relu6(output).mean()
+            self.lr_result = F.relu6(input@self.weights+self.lr).mean()
         return output
 
 
@@ -37,7 +37,7 @@ class CustomLayer(nn.Module):
         if not lr:
             # lr = np.power(np.random.normal(loc=1e-2, scale=5, size=(out_features,)), 2)
             # lr = np.random.exponential(scale=1e-2, size=(out_features,))
-            lr = np.random.gamma(0.12,scale=0.165, size=(out_features,))
+            lr = np.random.normal(0,scale=0.5, size=(out_features,))
             # lr = -np.ones((out_features,))
             # lr = np.exp(-np.arange(out_features))
             # lr[lr<0.5]=np.exp(lr[lr<0.5])
@@ -165,108 +165,7 @@ def test(model, first_task=True):
     return accuracy, auc
 
 
-# def evaluate(data_dict, length=20000, batch_size=100, train_to_thresh=False, mask_d=0.4, disperssion=0.4, index=0):
-#     print('************************************************')
-#     print('model homogeneuos')
-#     print('************************************************')
-#     model = CustomNetwork(input_size, hidden_size, output_size, homogenuos_lr=True)
-#     model.init_weights()
-#     model_b = deepcopy(model)
-#     model_c = deepcopy(model)
-#     if train_to_thresh:
-#         length = 1000000000000000
-#     train_data = CDataLoader(batch_size, mask_d=mask_d, n_batch=length, disperssion=disperssion)
-#     test_data = CDataLoader(1000, mask_d=mask_d, n_batch=length, disperssion=disperssion)
-#     _, _, steps_1 = train(model, train_data, test_data, train_to_thresh)
-#     print('step 1:  ', steps_1)
-#     accuracy_1, auc_1 = test(model)
-#     train_data.switch()
-#     test_data.switch()
-#     _, _, steps_2 = train(model, train_data, test_data, train_to_thresh)
-#     print('step 2:  ', steps_2)
-#     accuracy_2, auc_2 = test(model, False)
-#     print("--------------------first task")
-#     accuracy_forget, auc_forget = test(model)
-#     data_dict['steps_1'].append(steps_1)
-#     data_dict['steps_2'].append(steps_2)
-#     data_dict['auc_1'].append(auc_1)
-#     data_dict['accuracy_1'].append(accuracy_1)
-#     data_dict['auc_2'].append(auc_2)
-#     data_dict['accuracy_2'].append(accuracy_2)
-#     data_dict['auc_forget'].append(auc_forget)
-#     data_dict['accuracy_forget'].append(accuracy_forget)
-#     data_dict['id'].append('original')
-#     data_dict['index'].append(index)
-#     data_dict['hidden_size'].append(hidden_size)
-#
-#     print('\n************************************************')
-#
-#     print('model heterogeneous')
-#     print('************************************************')
-#     model_b.homogenuos_lr = False
-#     model_b.entropy_dependent_lr = False
-#
-#     # model.init_weights()
-#
-#     train_data = CDataLoader(batch_size, mask_d=mask_d, n_batch=length, disperssion=disperssion)
-#     test_data = CDataLoader(1000, mask_d=mask_d, n_batch=length, disperssion=disperssion)
-#     _, _, steps_1 = train(model_b, train_data, test_data, train_to_thresh)
-#     print('step 1:  ', steps_1)
-#
-#     accuracy_1, auc_1 = test(model_b)
-#     train_data.switch()
-#     test_data.switch()
-#     _, _, steps_2 = train(model_b, train_data, test_data, train_to_thresh)
-#     print('step 2:  ', steps_2)
-#
-#     accuracy_2, auc_2 = test(model_b, False)
-#     print("--------------------first task")
-#     accuracy_forget, auc_forget = test(model_c)
-#
-#     data_dict['steps_1'].append(steps_1)
-#     data_dict['steps_2'].append(steps_2)
-#     data_dict['auc_1'].append(auc_1)
-#     data_dict['accuracy_1'].append(accuracy_1)
-#     data_dict['auc_2'].append(auc_2)
-#     data_dict['accuracy_2'].append(accuracy_2)
-#     data_dict['auc_forget'].append(auc_forget)
-#     data_dict['accuracy_forget'].append(accuracy_forget)
-#     data_dict['id'].append('heterogeneous_constant')
-#     data_dict['index'].append(index)
-#     data_dict['hidden_size'].append(hidden_size)
-#     print('************************************************')
-#     print('model heterogeneous custom_response with bounded relu')
-#     print('************************************************')
-#     model_c.homogenuos_lr = False
-#     model_c.entropy_dependent_lr = True
-#     # model.init_weights()
-#
-#     train_data = CDataLoader(batch_size, mask_d=mask_d, n_batch=length, disperssion=disperssion)
-#     test_data = CDataLoader(1000, mask_d=mask_d, n_batch=length, disperssion=disperssion)
-#     _, _, steps_1 = train(model_c, train_data, test_data, train_to_thresh)
-#     print('step 1:  ', steps_1)
-#
-#     accuracy_1, auc_1 = test(model_c)
-#     train_data.switch()
-#     test_data.switch()
-#     _, _, steps_2 = train(model_c, train_data, test_data, train_to_thresh)
-#     print('step 2:  ', steps_2)
-#
-#     accuracy_2, auc_2 = test(model_c, False)
-#     print("--------------------first task")
-#     accuracy_forget, auc_forget= test(model_c)
-#
-#     data_dict['steps_1'].append(steps_1)
-#     data_dict['steps_2'].append(steps_2)
-#     data_dict['auc_1'].append(auc_1)
-#     data_dict['accuracy_1'].append(accuracy_1)
-#     data_dict['auc_2'].append(auc_2)
-#     data_dict['accuracy_2'].append(accuracy_2)
-#     data_dict['auc_forget'].append(auc_forget)
-#     data_dict['accuracy_forget'].append(accuracy_forget)
-#     data_dict['id'].append('heterogeneous_dynamic_weights_relu6')
-#     data_dict['index'].append(index)
-#     data_dict['hidden_size'].append(hidden_size)
+
 def evaluate_model(model, model_id, train_to_thresh, mask_d, disperssion, length, batch_size, index, data_dict,input_size,hidden_size,output_size,tag):
     if train_to_thresh:
         length = 1000000000000000
@@ -340,7 +239,7 @@ cd.plot_data(*cd.generate_first_rule_data(),500)
 cd.plot_data(*cd.generate_second_rule_data(),500)
 cd.plot_data(n=500)
 # cd.plot_data()
-tag='gamma_immidiate_reponse'
+tag='custome immidiate response'
 
 def evaluate_on_cluster(data_folder,simulation_id,number_of_sims):
     data_dict = dict(steps_1=[], steps_2=[], auc_1=[], auc_2=[], auc_forget=[], index=[], id=[],
