@@ -21,7 +21,7 @@ class SingleNeuron(nn.Linear):
             self.lr = lr
         else:
             self.lr = np.random.random(1) * 0.4
-        self.weights=torch.normal(mean=torch.zeros((1,w_size)), std=torch.ones((1,w_size)))# self.w=np.random.normal(0,1,size=w_size)
+        self.weights=torch.normal(mean=torch.zeros((w_size,1)), std=torch.ones((w_size,1)))# self.w=np.random.normal(0,1,size=w_size)
         self.lr_result = lr
 
     def forward(self, input: Tensor) -> Tensor:
