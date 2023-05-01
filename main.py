@@ -53,7 +53,7 @@ class CustomNetwork(nn.Module):
     def __init__(self, input_size, hidden_size, output_size, homogenuos_lr=False, entropy_dependent_lr=True):
         super().__init__()
         self.layer1 = CustomLayer(input_size, hidden_size, w_size=input_size)
-        self.layer2 = CustomLayer(hidden_size, output_size, w_size=input_size)
+        self.layer2 = CustomLayer(hidden_size, output_size, w_size=hidden_size)
         self.sigmoid = nn.Sigmoid()
         self.homogeneous_lr = homogenuos_lr
         self.entropy_dependent_lr = entropy_dependent_lr
