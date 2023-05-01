@@ -17,15 +17,6 @@ class CDataLoader:
 
     def generate_data(self, n=None):
         x = np.random.random((2, self.batch_size if n is None else n)) * 2 - 1
-        # if self.normal_sampling: #todo implement
-        #     count = int(self.batch_size/4)
-        #     vec = np.array([1,1])*(2/np.sqrt(2.))/2
-        #     x1= np.random.multivariate_normal(mean=vec*(1+self.label_margin_ratio),cov=np.eye(2)/(2/np.sqrt(2.))/2,size=(count))
-        #     x2= np.random.multivariate_normal(mean=vec*(1-self.label_margin_ratio),cov=np.eye(2)/(2/np.sqrt(2.))/2,size=(count))
-        #     vec[0]*=-1
-        #     x3= np.random.multivariate_normal(mean=vec*(1-self.label_margin_ratio),cov=np.eye(2)/(2/np.sqrt(2.))/2,size=(count))
-        #     x4= np.random.multivariate_normal(mean=vec*(1+self.label_margin_ratio),cov=np.eye(2)/(2/np.sqrt(2.))/2,size=(count))
-        #     x=np.vstack((x1,x2,x3,x4)).T
         rotation_matrix = np.array([[np.cos(np.pi / 4), -np.sin(np.pi / 4)], [np.sin(np.pi / 4), np.cos(np.pi / 4)]])
         x = rotation_matrix @ x
         x[0, :] /= x[0, :].max()

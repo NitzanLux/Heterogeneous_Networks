@@ -234,11 +234,11 @@ hidden_size = 100
 output_size = 1
 
 
-cd = CDataLoader(500, mask_d=0.5, disperssion=10, n_batch=2000, normal_sampling=False)
+cd = CDataLoader(500, mask_d=0.5, disperssion=10, n_batch=20000, normal_sampling=False)
 cd.plot_data(*cd.generate_first_rule_data(),500)
 cd.plot_data(*cd.generate_second_rule_data(),500)
 cd.plot_data(n=500)
-# cd.plot_data()
+cd.plot_data()
 tag='custome immidiate response'
 
 def evaluate_on_cluster(data_folder,simulation_id,number_of_sims):
