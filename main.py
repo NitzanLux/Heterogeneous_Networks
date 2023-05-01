@@ -230,7 +230,7 @@ def evaluate(data_dict,input_size,hidden_size,output_size, length=20000, batch_s
     return data_dict
 
 input_size = 2
-hidden_size = 6
+hidden_size = 4
 output_size = 1
 
 
