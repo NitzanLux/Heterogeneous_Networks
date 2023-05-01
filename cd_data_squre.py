@@ -24,8 +24,7 @@ class CDataLoader:
         x_sgn = np.sign(x)
         x = x * self.dispersion
         x = x + np.array([[self.mask_d], [self.mask_d]]) * x_sgn
-        x[:,
-        np.linalg.norm(np.abs(x) - np.array([[self.mask_d], [self.mask_d]]), 1, axis=0) > self.dispersion / np.sqrt(
+        x[:np.linalg.norm(np.abs(x) - np.array([[self.mask_d], [self.mask_d]]), 1, axis=0) > self.dispersion / np.sqrt(
             2.)] *= (1 + self.label_margin_ratio/2.)
         x[:,np.linalg.norm(np.abs(x) - np.array([[self.mask_d], [self.mask_d]]), 1, axis=0) <= self.dispersion / np.sqrt(
             2.)] *= (1 - self.label_margin_ratio/2.)
