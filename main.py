@@ -200,7 +200,7 @@ def evaluate_model(model, model_id, train_to_thresh, mask_d, disperssion, length
 
     return data_dict
 
-def evaluate(data_dict,input_size,hidden_size,output_size, length=20000, batch_size=100, train_to_thresh=False, mask_d=0.4, disperssion=0.4, index=0,tag=''):
+def evaluate(data_dict,input_size,hidden_size,output_size, length=20000, batch_size=50, train_to_thresh=False, mask_d=0.4, disperssion=0.4, index=0,tag=''):
     print('************************************************')
     print('model homogeneuos')
     print('************************************************')
