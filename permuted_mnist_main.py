@@ -137,7 +137,7 @@ if __name__ == '__main__':
     for i in range(10):
         seed_number=random.randint(0,100000)
 
-        args = dict(seed=seed_number,n_task=10,tag="test_basic_network",n_epochs=20,n_f_epochs=50,entropy_dependent_lr=False,homogeneous_lt=False,model_hidden_sizes=[20*20,10*10,10*10,5*5])
+        args = dict(seed_number=seed_number,n_task=10,tag="test_basic_network",n_epochs=20,n_f_epochs=50,entropy_dependent_lr=False,homogeneous_lt=False,model_hidden_sizes=[20*20,10*10,10*10,5*5])
         s = slurm_job.SlurmJobFactory('cluster_logs')
         s.send_job_for_function(f'{i}_first_validation','permuted_mnist_main','save_matrix_and_params',args,run_on_GPU=i<5)
         print(i)
