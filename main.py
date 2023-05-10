@@ -13,77 +13,7 @@ from copy import deepcopy
 from torch import Tensor
 import torch.nn.functional as F
 from utils import slurm_job
-
-class SingleNeuron(nn.Linear):
-    def __init__(self, in_features: int, w_size: int, lr:[None , float] = None):
-        super().__init__(in_features, 1)
-        if lr:
-            self.lr = lr
-        else:
-            self.lr = np.random.random(1) * 0.4
-        self.weights=torch.normal(mean=torch.zeros((w_size,1)), std=torch.ones((w_size,1)))# self.w=np.random.normal(0,1,size=w_size)
-        self.lr_result = lr
-
-    def forward(self, input: Tensor) -> Tensor:
-        output = super().forward(input)
-        with torch.no_grad():
-            self.lr_result = F.relu6(input@self.weights+self.lr).mean()
-        return output
-
-
-class CustomLayer(nn.Module):
-    def __init__(self, in_features: int, out_features: int, w_size: int, lr: [List[float] , None] = None):
-        super().__init__()
-        if not lr:
-            # lr = np.power(np.random.normal(loc=1e-2, scale=5, size=(out_features,)), 2)
-            # lr = np.random.exponential(scale=1e-2, size=(out_features,))
-            lr = np.random.normal(0,scale=0.5, size=(out_features,))
-            # lr = -np.ones((out_features,))
-            # lr = np.exp(-np.arange(out_features))
-            # lr[lr<0.5]=np.exp(lr[lr<0.5])
-            # lr[lr0.5]=np.exp(lr[lr<0.5])
-        self.neuron_in_layer = nn.ModuleList(
-            [SingleNeuron(in_features, w_size, _lr) for i, _lr in zip(range(out_features), lr)])
-
-    def forward(self, input):
-        return torch.squeeze(torch.stack([i(input) for i in self.neuron_in_layer], dim=1))
-
-
-class CustomNetwork(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size, homogenuos_lr=False, entropy_dependent_lr=True):
-        super().__init__()
-        self.layer1 = CustomLayer(input_size, hidden_size, w_size=input_size)
-        self.layer2 = CustomLayer(hidden_size, output_size, w_size=hidden_size)
-        self.sigmoid = nn.Sigmoid()
-        self.homogeneous_lr = homogenuos_lr
-        self.entropy_dependent_lr = entropy_dependent_lr
-
-    def forward(self, input):
-        x = torch.relu(self.layer1(input))
-        x = self.layer2(x)
-        return self.sigmoid(x)
-
-    def generate_lr_params(self):
-        data = []
-        for l in [self.layer1, self.layer2]:
-            for m in l.neuron_in_layer:
-                data.append(
-                    {'params': m.classifier.parameters(), 'lr': m.lr_result if self.entropy_dependent_lr else m.lr})
-        return data
-
-    def get_optimizer(self):
-        if self.homogeneous_lr:
-            return optim.SGD(self.parameters(), lr=1e-2)
-        return optim.SGD(self.generate_lr_params(), lr=1e-2)
-
-    def init_weights(self):
-        def _init_weights(m):
-            if isinstance(m, nn.Linear):
-                torch.nn.init.xavier_uniform_(m.weight)
-                m.bias.data.fill_(0.01)
-
-        self.apply(_init_weights)
-
+from neural_network import *
 
 def custom_loss_function(pred, target):
     loss = nn.MSELoss()(pred, target)  # Replace with the loss function suitable for your problem
@@ -254,8 +184,8 @@ def evaluate_on_cluster(data_folder,simulation_id,number_of_sims):
     os.makedirs(cur_path,exist_ok=True)
     with open(os.path.join(cur_path,f'data_{tag}_{simulation_id}.p'), 'wb') as fp:
         pickle.dump(data_dict, fp, protocol=pickle.HIGHEST_PROTOCOL)
-if __name__ == '__main__':
-    simulation_id=np.random.randint(0,10000)
-    for i in range(100):
-        cur_id = simulation_id+i
-        slurm_job.SlurmJobFactory('cluster_logs').send_job_for_function('heterogeneous_ann_%d'%cur_id,'main','evaluate_on_cluster',[f'data_{simulation_id}',cur_id,1])
+# if __name__ == '__main__':
+#     simulation_id=np.random.randint(0,10000)
+#     for i in range(100):
+#         cur_id = simulation_id+i
+#         slurm_job.SlurmJobFactory('cluster_logs').send_job_for_function('heterogeneous_ann_%d'%cur_id,'main','evaluate_on_cluster',[f'data_{simulation_id}',cur_id,1])
