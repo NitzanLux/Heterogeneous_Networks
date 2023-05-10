@@ -146,7 +146,6 @@ class SlurmJobFactory:
             args = ",".join([f'{k}='+(("'"+v+"'") if isinstance(v,str) else str(v)) for k,v in args.items()])
         else:
             args=str(args)[1:-1]
-        print()
         job = SlurmJob(job_name, self.job_folder, f'python -c "from {file_name} import {function_name};{function_name}({args})"', run_on_GPU, timelimit, mem,filename_index=filename_index)
         job.send()
         self.jobs.append((job, extra))
