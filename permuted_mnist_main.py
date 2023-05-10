@@ -1,5 +1,6 @@
 import os
 
+import numpy.random
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -107,7 +108,7 @@ def run_permuted_mnist_task(model, n_task: int, batch_size: int, n_steps: [None,
         output_matrix[i, :i+1] = evaluate_performance(m, dataloaders_test[:i+1], 10000, 5)
     return output_matrix
 
-def save_matrix_and_params(entropy_dependent_lr=False,homogeneous_lr=True,tag='', n_task: int=10, batch_size: int=15, n_steps: [None, int] = None,
+def save_matrix_and_params(seed_number:int,entropy_dependent_lr=False,homogeneous_lr=True,tag='', n_task: int=10, batch_size: int=15, n_steps: [None, int] = None,
                             n_epochs: [None, int] = None, num_workers: int = 1, model_hidden_sizes=(24 * 24, 10 * 10, 5 * 5),n_f_epochs: [None, int] = None,
                             n_f_steps: [None, int] = None):
     os.makedirs('data',exist_ok=True)
@@ -116,6 +117,7 @@ def save_matrix_and_params(entropy_dependent_lr=False,homogeneous_lr=True,tag=''
     dest_path = os.path.join('data',tag,dir_name)
     os.makedirs(dest_path)
 
+    np.random.seed(seed_number)
     f_m = CustomNetwork(28 * 28,model_hidden_sizes , 10)
     f_m.init_weights()
     f_m.entropy_dependent_lr = entropy_dependent_lr
@@ -124,15 +126,18 @@ def save_matrix_and_params(entropy_dependent_lr=False,homogeneous_lr=True,tag=''
     p = run_permuted_mnist_task(f_m, n_task, batch_size, n_steps=n_steps,n_epochs=n_epochs, n_f_steps=n_f_steps,n_f_epochs=n_f_epochs,num_workers=num_workers)
     with open(os.path.join(dest_path,'performance_mat.p'), 'wb') as f:
         pickle.dump(p, f)
-    data_dict = dict(entropy_dependent_lr=entropy_dependent_lr,homogeneous_lr=homogeneous_lr,tag=tag,n_task=n_task,
+    data_dict = dict(seed_number=seed_number,entropy_dependent_lr=entropy_dependent_lr,homogeneous_lr=homogeneous_lr,tag=tag,n_task=n_task,
                      batch_size=batch_size,n_steps=n_steps,n_epochs=n_epochs,num_workers=num_workers,model_hidden_sizes=model_hidden_sizes,n_f_steps=n_f_steps,n_f_epochs=n_f_epochs)
     with open(os.path.join(dest_path,f'config_dict.pickle'), 'wb') as f:
         pickle.dump(data_dict, f)
 
     return p
+import random
 if __name__ == '__main__':
     for i in range(10):
-        args = dict(n_task=10,tag='test_basic_network',n_epochs=20,n_f_epochs=50,entropy_dependent_lr=False,homogeneous_lt=False,model_hidden_sizes=[20*20,10*10,10*10,5*5])
+        seed_number=random.randint(0,100000)
+
+        args = dict(seed=seed_number,n_task=10,tag='test_basic_network',n_epochs=20,n_f_epochs=50,entropy_dependent_lr=False,homogeneous_lt=False,model_hidden_sizes=[20*20,10*10,10*10,5*5])
         s = slurm_job.SlurmJobFactory('cluster_logs')
         s.send_job_for_function(f'{i}_first_validation','permuted_mnist_main','save_matrix_and_params',args,run_on_GPU=i<5)
         print(i)
