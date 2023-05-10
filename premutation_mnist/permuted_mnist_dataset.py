@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 
 class PermutedMNIST(Dataset):
-    def __init__(self, train=True, permute: bool | np.ndarray = False):
+    def __init__(self, train=True, permute: [bool, np.ndarray] = False):
         self.mnist = torchvision.datasets.MNIST(root='./data', train=train, download=True,
                                                 transform=transforms.ToTensor())
         self.train = train
