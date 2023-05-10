@@ -141,7 +141,7 @@ class SlurmJobFactory:
         job = SlurmJob(job_name, self.job_folder, run_line, run_on_GPU, timelimit, mem,filename_index=filename_index)
         job.send()
         self.jobs.append((job, extra))
-    def send_job_for_function(self, job_name, file_name,function_name,args:List|Dict, run_on_GPU=False, timelimit=True, mem=DEFAULT_MEM, extra=None,filename_index=None):
+    def send_job_for_function(self, job_name, file_name,function_name,args:[List,Dict], run_on_GPU=False, timelimit=True, mem=DEFAULT_MEM, extra=None,filename_index=None):
         if isinstance(args,dict):
             args = ",".join([f'{k}={v}'for k,v in args.items()])
         else:
