@@ -30,7 +30,7 @@ class SingleNeuron(nn.Linear):
 class CustomLayer(nn.Module):
     def __init__(self, in_features: int, out_features: int, lr: [List[float],None]=None):
         super().__init__()
-        assert len(lr)==out_features,"features supposed to be as the number of lr"
+        assert lr is None or len(lr)==out_features,"features supposed to be as the number of lr"
         if lr is None:
             lr=[1e-5]*(out_features//2) +[1e-1]*(out_features-out_features//2)
         self.neuron_in_layer = nn.ModuleList(
