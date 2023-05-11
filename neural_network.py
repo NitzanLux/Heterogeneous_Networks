@@ -28,9 +28,11 @@ class SingleNeuron(nn.Linear):
 
 
 class CustomLayer(nn.Module):
-    def __init__(self, in_features: int, out_features: int, lr: List[float]):
+    def __init__(self, in_features: int, out_features: int, lr: [List[float],None]=None):
         super().__init__()
         assert len(lr)==out_features,"features supposed to be as the number of lr"
+        if lr is None:
+            lr=[1e-5]*(out_features//2) +[1e-1]*(out_features-out_features//2)
         self.neuron_in_layer = nn.ModuleList(
             [SingleNeuron(in_features, out_features, _lr) for i, _lr in zip(range(out_features), lr)])
     def forward(self, input):
@@ -38,14 +40,20 @@ class CustomLayer(nn.Module):
         return torch.relu(out)
 
 class CustomNetwork(nn.Module):
-    def __init__(self, input_size, hidden_sizes:Iterable[int], output_size, homogenuos_lr=False, entropy_dependent_lr=True):
+    def __init__(self, input_size, hidden_sizes:List[int], output_size, homogenuos_lr=False,lr_arr:[List[List[float]],None]=None, entropy_dependent_lr=True):
         super().__init__()
         self.layers= nn.ModuleList()
         last_layer=input_size
+
+        if lr_arr is not None:
+            assert all([len(lr)==h for lr,h in zip(lr_arr,hidden_sizes+[output_size])]),"number of lr should be congurent"
+            assert False
         for i in hidden_sizes:
             self.layers.append(CustomLayer(last_layer, i,np.random.random((i,))))
+            self.layers.append(CustomLayer(last_layer, i))
             last_layer=i
-        self.layers.append(CustomLayer(last_layer, output_size,np.random.random((output_size,))))#todo fix
+        # self.layers.append(CustomLayer(last_layer, output_size,np.random.random((output_size,))))#todo fix
+        self.layers.append(CustomLayer(last_layer, output_size))#todo fix
         self.softmax = nn.Softmax(dim=0)
         self.homogeneous_lr = homogenuos_lr
         self.entropy_dependent_lr = entropy_dependent_lr

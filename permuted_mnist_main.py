@@ -111,7 +111,7 @@ def run_permuted_mnist_task(model, n_task: int, batch_size: int, n_steps: [None,
 def save_matrix_and_params(seed_number:int,entropy_dependent_lr=False,homogeneous_lr=True,tag='', n_task: int=10, batch_size: int=15, n_steps: [None, int] = None,
                             n_epochs: [None, int] = None, num_workers: int = 1, model_hidden_sizes=(24 * 24, 10 * 10, 5 * 5),n_f_epochs: [None, int] = None,
                             n_f_steps: [None, int] = None):
-    os.makedirs('data',exist_ok=True)
+    os.makedirs(os.path.join('data','mnist_task_data'),exist_ok=True)
     os.makedirs(os.path.join('data',tag),exist_ok=True)
     dir_name=f'd_{len(os.listdir(os.path.join("data",tag)))}_{np.random.randint(0,10000)}'
     dest_path = os.path.join('data',tag,dir_name)
@@ -137,7 +137,8 @@ if __name__ == '__main__':
     for i in range(10):
         seed_number=random.randint(0,100000)
 
-        args = dict(seed_number=seed_number,n_task=10,tag="test_basic_network",n_epochs=20,n_f_epochs=50,entropy_dependent_lr=False,homogeneous_lr=True,model_hidden_sizes=[20*20,10*10,10*10,5*5])
+        args = dict(seed_number=seed_number,n_task=10,tag="test_basic_network",n_epochs=20,n_f_epochs=50,
+                    entropy_dependent_lr=False,homogeneous_lr=False,model_hidden_sizes=[20*20,10*10,10*10,5*5])
         s = slurm_job.SlurmJobFactory('cluster_logs')
         s.send_job_for_function(f'{i}_first_validation','permuted_mnist_main','save_matrix_and_params',args,run_on_GPU=i<5)
         print(i)
