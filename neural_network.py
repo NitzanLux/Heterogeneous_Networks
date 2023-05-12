@@ -66,7 +66,7 @@ class CustomNetwork(nn.Module):
 
     def generate_lr_params(self):
         data = []
-        for l in [self.layers]:
+        for l in self.layers:
             for m in l.neuron_in_layer:
                 data.append(
                     {'params': m.classifier.parameters(), 'lr': m.lr_result if self.entropy_dependent_lr else m.lr})
