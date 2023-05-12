@@ -146,6 +146,10 @@ if __name__ == '__main__':
             args = get_args()
 
             s = slurm_job.SlurmJobFactory('cluster_logs')
+            args['homogeneous_lr']=False
+
             s.send_job_for_function(f'{i}_first_validation_hetro','permuted_mnist_main','save_matrix_and_params',args,run_on_GPU=i<5)
+            args['homogeneous_lr']=True
+            s.send_job_for_function(f'{i}_first_validation_homogenuos','permuted_mnist_main','save_matrix_and_params',args,run_on_GPU=i<5)
             print(i)
         # print(p)
