@@ -36,7 +36,7 @@ class CustomLayer(nn.Module):
         self.neuron_in_layer = nn.ModuleList(
             [SingleNeuron(in_features, out_features, _lr) for i, _lr in zip(range(out_features), lr)])
     def forward(self, input):
-        out = torch.squeeze(torch.stack([i(input) for i in self.neuron_in_layer], dim=1))
+        out = torch.stack([torch.squeeze(i(input)) for i in self.neuron_in_layer], dim=1)
         return torch.relu(out)
 
 class CustomNetwork(nn.Module):
@@ -49,7 +49,7 @@ class CustomNetwork(nn.Module):
             assert all([len(lr)==h for lr,h in zip(lr_arr,hidden_sizes+[output_size])]),"number of lr should be congurent"
             assert False
         for i in hidden_sizes:
-            self.layers.append(CustomLayer(last_layer, i,np.random.random((i,))))
+            # self.layers.append(CustomLayer(last_layer, i,np.random.random((i,))))
             self.layers.append(CustomLayer(last_layer, i))
             last_layer=i
         # self.layers.append(CustomLayer(last_layer, output_size,np.random.random((output_size,))))#todo fix
