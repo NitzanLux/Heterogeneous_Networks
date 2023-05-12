@@ -13,15 +13,16 @@ from copy import deepcopy
 from torch import Tensor
 import torch.nn.functional as F
 from utils import slurm_job
-class SingleNeuron(nn.Linear):
+class SingleNeuron(nn.Module):
     def __init__(self, in_features: int, w_size: int, lr:float ):
-        super().__init__(in_features, 1)
+        super().__init__()
+        self.linear = nn.Linear(in_features, 1)
         self.lr = lr
         self.weights=torch.normal(mean=torch.zeros((w_size,1)), std=torch.ones((w_size,1)))# self.w=np.random.normal(0,1,size=w_size)
         self.lr_result = lr
 
     def forward(self, input: Tensor) -> Tensor:
-        output = super().forward(input)
+        output = self.linear(input)
         # with torch.no_grad():
         #     self.lr_result = F.relu6(input@self.weights+self.lr).mean()
         return output
