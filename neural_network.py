@@ -70,13 +70,13 @@ class CustomNetwork(nn.Module):
         for l in self.layers:
             for m in l.neuron_in_layer:
                 data.append(
-                    {'params': m.classifier.parameters(), 'lr': m.lr_result if self.entropy_dependent_lr else m.lr})
+                    {'params': m.parameters(), 'lr': m.lr_result if self.entropy_dependent_lr else m.lr})
         return data
 
     def get_optimizer(self):
         if self.homogeneous_lr:
             return optim.SGD(self.parameters(), lr=1e-2)
-        return optim.SGD(self.generate_lr_params(), lr=1e-2)
+        return optim.SGD(self.generate_lr_params(), lr=0)
 
     def init_weights(self):
         def _init_weights(m):
