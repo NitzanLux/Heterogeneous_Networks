@@ -41,8 +41,7 @@ def init_wandb(config, model):
 
 
 def train(model, data_loader, test_dataloader, n_steps: [None, int] = None, n_epochs: [None, int] = None,
-          show_loss=False,
-          train_index=0):
+         train_index=0):
     assert (not n_steps and n_epochs) or (
             not n_epochs and n_steps), "n_steps and n_epochs should be choose(independently"
 
@@ -56,13 +55,12 @@ def train(model, data_loader, test_dataloader, n_steps: [None, int] = None, n_ep
             d_input = d_input.to(device)
             target = target.to(device)
             pred = model(d_input)
-            # optimizer = model.get_optimizer()
+
             target_ohv = F.one_hot(target, 10)
             optimizer.zero_grad()
             loss = custom_loss_function(pred, target_ohv)
             loss.backward()
             optimizer.step()
-            # convergence_data['train_loss'](loss.cpu().detach().numpy())
             model.eval()
             wandb.log({'training_loss_%d' % train_index: loss.cpu().detach().numpy(),
                        'training_accuracy_%d' % train_index: evaluation_score(pred, target)})
@@ -103,7 +101,7 @@ def test(model, data_loader, n_samples=4):
 
 
 def simple_train_and_evaluate(model, dataloader_train, data_loader_test, n_steps):
-    train(model, dataloader_train, data_loader_test, n_steps=n_steps, show_loss=True)
+    train(model, dataloader_train, data_loader_test, n_steps=n_steps)
     test(model, data_loader_test)
 
 
@@ -149,8 +147,8 @@ def run_permuted_mnist_task(model, n_task: int, batch_size: int, n_steps: [None,
     return output_matrix
 
 
-def build_model(model_hidden_sizes, homogeneous_lr, entropy_dependent_lr):
-    f_m = CustomNetwork(28 * 28, model_hidden_sizes, 10)
+def build_model(model_hidden_sizes, homogeneous_lr, entropy_dependent_lr,lr):
+    f_m = CustomNetwork(28 * 28, model_hidden_sizes, 10,lr_arr=lr)
     f_m.init_weights()
     f_m.entropy_dependent_lr = entropy_dependent_lr
     f_m.homogeneous_lr = homogeneous_lr
@@ -165,16 +163,15 @@ def save_matrix_and_params(seed_number: int, entropy_dependent_lr=False, homogen
                            n_f_steps: [None, int] = None):
     os.makedirs(os.path.join('data', 'mnist_task_data'), exist_ok=True)
     os.makedirs(os.path.join('data', tag), exist_ok=True)
-    dir_name = f'd_{len(os.listdir(os.path.join("data", tag)))}_{np.random.randint(0, 10000)}'
+    dir_name = f'd_{len(os.listdir(os.path.join("data", tag+"_"+"control" if homogeneous_lr else "hetrogenous")))}_{np.random.randint(0, 10000)}'
     dest_path = os.path.join('data', tag, dir_name)
     os.makedirs(dest_path)
-    data_dict = dict(dir_name=dir_name, seed_number=seed_number, entropy_dependent_lr=entropy_dependent_lr,
-                     homogeneous_lr=homogeneous_lr, tag=tag, n_task=n_task,
-                     batch_size=batch_size, n_steps=n_steps, n_epochs=n_epochs, num_workers=num_workers,
-                     model_hidden_sizes=model_hidden_sizes, n_f_steps=n_f_steps, n_f_epochs=n_f_epochs)
+    data_dict = locals()
+    data_dict['dest_path']=dest_path
     np.random.seed(seed_number)
 
-    f_m = build_model(model_hidden_sizes, homogeneous_lr, entropy_dependent_lr)
+
+    f_m = build_model(model_hidden_sizes, homogeneous_lr, entropy_dependent_lr,data_dict['lr'])
     init_wandb(data_dict, f_m)
 
     p = run_permuted_mnist_task(f_m, n_task, batch_size, n_steps=n_steps, n_epochs=n_epochs, n_f_steps=n_f_steps,
@@ -195,13 +192,13 @@ import platform
 if __name__ == '__main__':
     get_args = lambda: dict(seed_number=random.randint(0, 100000), n_task=10, tag="test_basic_network", n_epochs=20,
                             n_f_epochs=50,
-                            entropy_dependent_lr=False, homogeneous_lr=True,
+                            entropy_dependent_lr=False, homogeneous_lr=True,lr=1e-2,
                             model_hidden_sizes=[20 * 20, 10 * 10, 5 * 5])
     if platform.system() == 'Windows':
         # save_matrix_and_params(**get_args())
         m = build_model(get_args()['model_hidden_sizes'], True, False)
         args = get_args()
-        args['dir_name'] = args['tag'] + '_' + str(args['seed_number'])
+        args['dir_name'] = args['ta g'] + '_' + str(args['seed_number'])
         init_wandb(args, m)
 
         ts = simple_train_and_evaluate(m, PermutedMNIST(train=True).get_dataloader(100),

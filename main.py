@@ -134,7 +134,7 @@ def evaluate(data_dict,input_size,hidden_size,output_size, length=20000, batch_s
     print('************************************************')
     print('model homogeneuos')
     print('************************************************')
-    model = CustomNetwork(input_size, hidden_size, output_size, homogenuos_lr=True)
+    model = CustomNetwork(input_size, hidden_size, output_size, homogeneous_lr=True)
     model.init_weights()
     model_b = deepcopy(model)
     model_c = deepcopy(model)

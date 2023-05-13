@@ -41,22 +41,24 @@ class CustomLayer(nn.Module):
         return torch.relu(out)
 
 class CustomNetwork(nn.Module):
-    def __init__(self, input_size, hidden_sizes:List[int], output_size, homogenuos_lr=False,lr_arr:[List[List[float]],None]=None, entropy_dependent_lr=True):
+    def __init__(self, input_size, hidden_sizes:List[int], output_size, lr_arr:[List[List[float]],float, None],homogeneous_lr=False,  entropy_dependent_lr=True):
         super().__init__()
         self.layers= nn.ModuleList()
         last_layer=input_size
 
         if lr_arr is not None:
-            assert all([len(lr)==h for lr,h in zip(lr_arr,hidden_sizes+[output_size])]),"number of lr should be congurent"
+            assert (homogeneous_lr and isinstance(lr_arr, float)) or all([len(lr) == h for lr,h in zip(lr_arr, hidden_sizes + [output_size])]), "number of lr should be congurent"
             assert False
         for i in hidden_sizes:
             # self.layers.append(CustomLayer(last_layer, i,np.random.random((i,))))
             self.layers.append(CustomLayer(last_layer, i))
             last_layer=i
+        self.lr = lr_arr if isinstance(lr_arr,float) else 0.
+        self.lr_arr=None if isinstance(lr_arr,float) else lr_arr
         # self.layers.append(CustomLayer(last_layer, output_size,np.random.random((output_size,))))#todo fix
         self.layers.append(CustomLayer(last_layer, output_size))#todo fix
         self.softmax = nn.Softmax(dim=0)
-        self.homogeneous_lr = homogenuos_lr
+        self.homogeneous_lr = homogeneous_lr
         self.entropy_dependent_lr = entropy_dependent_lr
 
     def forward(self, input):
@@ -75,8 +77,8 @@ class CustomNetwork(nn.Module):
 
     def get_optimizer(self):
         if self.homogeneous_lr:
-            return optim.SGD(self.parameters(), lr=1e-3)
-        return optim.SGD(self.generate_lr_params(), lr=0)
+            return optim.SGD(self.parameters(), lr=self.lr)
+        return optim.SGD(self.generate_lr_params(), lr=self.lr)
 
     def init_weights(self):
         def _init_weights(m):
