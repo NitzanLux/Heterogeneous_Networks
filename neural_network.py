@@ -53,7 +53,7 @@ class CustomNetwork(nn.Module):
         last_layer = input_size
 
         if lr_arr is not None:
-            # pass
+            pass
             # assert (homogeneous_lr and isinstance(lr_arr, float)) or (all([len(lr) == h for lr,h in zip(lr_arr, hidden_sizes + [output_size])])), "number of lr should be congurent"
             # assert (isinstance(lr_arr, float)) or (all([len(lr) == h for lr, h in zip(lr_arr, hidden_sizes + [output_size])])), "number of lr should be congurent"
             # assert False
