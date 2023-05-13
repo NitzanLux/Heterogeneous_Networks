@@ -163,7 +163,7 @@ def save_matrix_and_params(seed_number: int, entropy_dependent_lr=False, homogen
                            n_f_steps: [None, int] = None):
     os.makedirs(os.path.join('data', 'mnist_task_data'), exist_ok=True)
     os.makedirs(os.path.join('data', tag), exist_ok=True)
-    dir_name = f'd_{len(os.listdir(os.path.join("data", tag+"_"+"control" if homogeneous_lr else "hetrogenous")))}_{np.random.randint(0, 10000)}'
+    dir_name = f'd_{len(os.listdir(os.path.join("data", tag+"_"+"control" if homogeneous_lr else "heterogeneous")))}_{np.random.randint(0, 10000)}'
     dest_path = os.path.join('data', tag, dir_name)
     os.makedirs(dest_path)
     data_dict = locals()
