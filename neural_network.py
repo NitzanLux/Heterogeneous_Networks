@@ -75,7 +75,7 @@ class CustomNetwork(nn.Module):
 
     def get_optimizer(self):
         if self.homogeneous_lr:
-            return optim.SGD(self.parameters(), lr=1e-2)
+            return optim.SGD(self.parameters(), lr=1e-3)
         return optim.SGD(self.generate_lr_params(), lr=0)
 
     def init_weights(self):
