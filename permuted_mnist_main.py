@@ -67,7 +67,12 @@ def train(model, data_loader, test_dataloader, n_steps: [None, int] = None, n_ep
             wandb.log({'training_loss_%d' % train_index: loss.cpu().detach().numpy(),
                        'training_accuracy_%d' % train_index: evaluation_score(pred, target)})
             if counter % 20 == 0:
-                d_input, target = test_iterator.__next__()
+                try:
+                    d_input, target = test_iterator.__next__()
+                except StopIteration as e:
+                    test_iterator = iter(test_dataloader)
+                    d_input, target = test_iterator.__next__()
+
                 d_input = d_input.to(device)
                 target = target.to(device)
                 wandb.log({'testing_accuracy_%d' % train_index: evaluation_score(model(d_input), target)})
