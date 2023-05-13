@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
-from typing import List,Iterable
+from typing import List, Iterable
 import matplotlib.pyplot as plt
 from cd_data_squre import CDataLoader
 from sklearn import metrics
@@ -13,12 +13,15 @@ from copy import deepcopy
 from torch import Tensor
 import torch.nn.functional as F
 from utils import slurm_job
+
+
 class SingleNeuron(nn.Module):
-    def __init__(self, in_features: int, w_size: int, lr:float ):
+    def __init__(self, in_features: int, w_size: int, lr: float):
         super().__init__()
         self.linear = nn.Linear(in_features, 1)
         self.lr = lr
-        self.weights=torch.normal(mean=torch.zeros((w_size,1)), std=torch.ones((w_size,1)))# self.w=np.random.normal(0,1,size=w_size)
+        self.weights = torch.normal(mean=torch.zeros((w_size, 1)),
+                                    std=torch.ones((w_size, 1)))  # self.w=np.random.normal(0,1,size=w_size)
         self.lr_result = lr
 
     def forward(self, input: Tensor) -> Tensor:
@@ -29,35 +32,42 @@ class SingleNeuron(nn.Module):
 
 
 class CustomLayer(nn.Module):
-    def __init__(self, in_features: int, out_features: int, lr: [List[float],None]=None):
+    def __init__(self, in_features: int, out_features: int, lr: [List[float], None] = None):
         super().__init__()
-        assert lr is None or len(lr)==out_features,"features supposed to be as the number of lr"
+        assert lr is None or len(lr) == out_features, "features supposed to be as the number of lr"
         if lr is None:
-            lr=[1e-5]*(out_features//2) +[1e-1]*(out_features-out_features//2)
+            lr = [1e-5] * (out_features // 2) + [1e-1] * (out_features - out_features // 2)
         self.neuron_in_layer = nn.ModuleList(
             [SingleNeuron(in_features, out_features, _lr) for i, _lr in zip(range(out_features), lr)])
+
     def forward(self, input):
         out = torch.stack([torch.squeeze(i(input)) for i in self.neuron_in_layer], dim=1)
         return torch.relu(out)
 
+
 class CustomNetwork(nn.Module):
-    def __init__(self, input_size, hidden_sizes:List[int], output_size, lr_arr:[List[List[float]],float, None],homogeneous_lr=False,  entropy_dependent_lr=True):
+    def __init__(self, input_size, hidden_sizes: List[int], output_size, lr_arr: [List[List[float]], float, None],
+                 homogeneous_lr=False, entropy_dependent_lr=True):
         super().__init__()
-        self.layers= nn.ModuleList()
-        last_layer=input_size
+        self.layers = nn.ModuleList()
+        last_layer = input_size
 
         if lr_arr is not None:
-            pass
+            # pass
             # assert (homogeneous_lr and isinstance(lr_arr, float)) or (all([len(lr) == h for lr,h in zip(lr_arr, hidden_sizes + [output_size])])), "number of lr should be congurent"
+            # assert (isinstance(lr_arr, float)) or (all([len(lr) == h for lr, h in zip(lr_arr, hidden_sizes + [output_size])])), "number of lr should be congurent"
             # assert False
-        for i in hidden_sizes:
+        self.lr = lr_arr if isinstance(lr_arr, float) else 0.
+        self.lr_arr = None if isinstance(lr_arr, float) else lr_arr
+        get_lr_f = lambda i: lr_arr if lr_arr is None else lr_arr[i]
+
+        for i,hs in enumerate(hidden_sizes):
             # self.layers.append(CustomLayer(last_layer, i,np.random.random((i,))))
-            self.layers.append(CustomLayer(last_layer, i))
-            last_layer=i
-        self.lr = lr_arr if isinstance(lr_arr,float) else 0.
-        self.lr_arr=None if isinstance(lr_arr,float) else lr_arr
+            self.layers.append(CustomLayer(last_layer, hs,lr=lr_arr if lr_arr is None else lr_arr[i]))
+            last_layer = hs
+
         # self.layers.append(CustomLayer(last_layer, output_size,np.random.random((output_size,))))#todo fix
-        self.layers.append(CustomLayer(last_layer, output_size))#todo fix
+        self.layers.append(CustomLayer(last_layer, output_size,lr=lr_arr if lr_arr is None else lr_arr[-1]))  # todo fix
         self.softmax = nn.Softmax(dim=0)
         self.homogeneous_lr = homogeneous_lr
         self.entropy_dependent_lr = entropy_dependent_lr
@@ -65,7 +75,7 @@ class CustomNetwork(nn.Module):
     def forward(self, input):
         out = input
         for l in self.layers:
-            out=l(out)
+            out = l(out)
         return self.softmax(out)
 
     def generate_lr_params(self):
@@ -89,8 +99,8 @@ class CustomNetwork(nn.Module):
 
         self.apply(_init_weights)
 
-    def pred(self,x):
-        out=self(x)
-        out_one_hot= torch.zeros_like(out)
-        out_one_hot[torch.argmax(out_one_hot)]=1
+    def pred(self, x):
+        out = self(x)
+        out_one_hot = torch.zeros_like(out)
+        out_one_hot[torch.argmax(out_one_hot)] = 1
         return out_one_hot
