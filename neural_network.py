@@ -47,8 +47,9 @@ class CustomNetwork(nn.Module):
         last_layer=input_size
 
         if lr_arr is not None:
-            assert (homogeneous_lr and isinstance(lr_arr, float)) or all([len(lr) == h for lr,h in zip(lr_arr, hidden_sizes + [output_size])]), "number of lr should be congurent"
-            assert False
+            pass
+            # assert (homogeneous_lr and isinstance(lr_arr, float)) or (all([len(lr) == h for lr,h in zip(lr_arr, hidden_sizes + [output_size])])), "number of lr should be congurent"
+            # assert False
         for i in hidden_sizes:
             # self.layers.append(CustomLayer(last_layer, i,np.random.random((i,))))
             self.layers.append(CustomLayer(last_layer, i))
