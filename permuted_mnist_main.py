@@ -160,7 +160,7 @@ def save_matrix_and_params(seed_number: int, entropy_dependent_lr=False, homogen
                            batch_size: int = 15, n_steps: [None, int] = None,
                            n_epochs: [None, int] = None, num_workers: int = 1,
                            model_hidden_sizes=(24 * 24, 10 * 10, 5 * 5), n_f_epochs: [None, int] = None,
-                           n_f_steps: [None, int] = None):
+                           n_f_steps: [None, int] = None,lr=None):
     os.makedirs(os.path.join('data', 'mnist_task_data'), exist_ok=True)
     os.makedirs(os.path.join('data', tag), exist_ok=True)
     dir_name = f'd_{len(os.listdir(os.path.join("data", tag+"_"+"control" if homogeneous_lr else "heterogeneous")))}_{np.random.randint(0, 10000)}'
