@@ -192,14 +192,14 @@ import platform
 if __name__ == '__main__':
     get_args = lambda: dict(seed_number=random.randint(0, 100000), n_task=10, tag="test_basic_network", n_epochs=20,
                             n_f_epochs=50,
-                            entropy_dependent_lr=False, homogeneous_lr=True, lr=1e-2,
+                            entropy_dependent_lr=False, homogeneous_lr=True, lr=None,
                             model_hidden_sizes=[20 * 20, 10 * 10, 5 * 5])
 
     if platform.system() == 'Windows':
         # save_matrix_and_params(**get_args())
-        m = build_model(get_args()['model_hidden_sizes'], True, False)
+        m = build_model(get_args()['model_hidden_sizes'], True, False,get_args()['lr'])
         args = get_args()
-        args['dir_name'] = args['ta g'] + '_' + str(args['seed_number'])
+        args['dir_name'] = args['tag'] + '_' + str(args['seed_number'])
         init_wandb(args, m)
 
         ts = simple_train_and_evaluate(m, PermutedMNIST(train=True).get_dataloader(100),
@@ -211,10 +211,12 @@ if __name__ == '__main__':
             s = slurm_job.SlurmJobFactory('cluster_logs')
 
             args['homogeneous_lr'] = False
+            args['lr']=None
 
             s.send_job_for_function(f'{i}_first_validation_hetro', 'permuted_mnist_main', 'save_matrix_and_params',
                                     args, run_on_GPU=i < 3)
             args['homogeneous_lr'] = True
+            args['lr']=1e-2
             s.send_job_for_function(f'{i}_first_validation_homogenuos', 'permuted_mnist_main', 'save_matrix_and_params',
                                     args, run_on_GPU=i < 3)
             print(i)

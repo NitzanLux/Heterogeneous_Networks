@@ -59,15 +59,14 @@ class CustomNetwork(nn.Module):
             # assert False
         self.lr = lr_arr if isinstance(lr_arr, float) else 0.
         self.lr_arr = None if isinstance(lr_arr, float) else lr_arr
-        get_lr_f = lambda i: lr_arr if lr_arr is None else lr_arr[i]
 
         for i,hs in enumerate(hidden_sizes):
             # self.layers.append(CustomLayer(last_layer, i,np.random.random((i,))))
-            self.layers.append(CustomLayer(last_layer, hs,lr=lr_arr if lr_arr is None else lr_arr[i]))
+            self.layers.append(CustomLayer(last_layer, hs,lr=lr_arr if not isinstance(lr_arr,list) else lr_arr[i]))
             last_layer = hs
 
         # self.layers.append(CustomLayer(last_layer, output_size,np.random.random((output_size,))))#todo fix
-        self.layers.append(CustomLayer(last_layer, output_size,lr=lr_arr if lr_arr is None else lr_arr[-1]))  # todo fix
+        self.layers.append(CustomLayer(last_layer, output_size,lr=lr_arr if not isinstance(lr_arr,list) else lr_arr[-1]))  # todo fix
         self.softmax = nn.Softmax(dim=0)
         self.homogeneous_lr = homogeneous_lr
         self.entropy_dependent_lr = entropy_dependent_lr
