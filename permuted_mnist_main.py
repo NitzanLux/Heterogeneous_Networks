@@ -168,9 +168,10 @@ def save_matrix_and_params(seed_number: int, entropy_dependent_lr=False, homogen
                      batch_size=batch_size, n_steps=n_steps, n_epochs=n_epochs, num_workers=num_workers,
                      model_hidden_sizes=model_hidden_sizes, n_f_steps=n_f_steps, n_f_epochs=n_f_epochs)
     np.random.seed(seed_number)
-    init_wandb(data_dict, m)
 
     f_m = build_model(model_hidden_sizes, homogeneous_lr, entropy_dependent_lr)
+    init_wandb(data_dict, f_m)
+
     p = run_permuted_mnist_task(f_m, n_task, batch_size, n_steps=n_steps, n_epochs=n_epochs, n_f_steps=n_f_steps,
                                 n_f_epochs=n_f_epochs, num_workers=num_workers)
     with open(os.path.join(dest_path, 'performance_mat.p'), 'wb') as f:
