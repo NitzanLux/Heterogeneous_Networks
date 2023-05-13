@@ -41,7 +41,7 @@ def init_wandb(config, model):
 
 
 def train(model, data_loader, test_dataloader, n_steps: [None, int] = None, n_epochs: [None, int] = None,
-         train_index=0):
+          train_index=0):
     assert (not n_steps and n_epochs) or (
             not n_epochs and n_steps), "n_steps and n_epochs should be choose(independently"
 
@@ -147,8 +147,8 @@ def run_permuted_mnist_task(model, n_task: int, batch_size: int, n_steps: [None,
     return output_matrix
 
 
-def build_model(model_hidden_sizes, homogeneous_lr, entropy_dependent_lr,lr):
-    f_m = CustomNetwork(28 * 28, model_hidden_sizes, 10,lr_arr=lr)
+def build_model(model_hidden_sizes, homogeneous_lr, entropy_dependent_lr, lr):
+    f_m = CustomNetwork(28 * 28, model_hidden_sizes, 10, lr_arr=lr)
     f_m.init_weights()
     f_m.entropy_dependent_lr = entropy_dependent_lr
     f_m.homogeneous_lr = homogeneous_lr
@@ -160,18 +160,18 @@ def save_matrix_and_params(seed_number: int, entropy_dependent_lr=False, homogen
                            batch_size: int = 15, n_steps: [None, int] = None,
                            n_epochs: [None, int] = None, num_workers: int = 1,
                            model_hidden_sizes=(24 * 24, 10 * 10, 5 * 5), n_f_epochs: [None, int] = None,
-                           n_f_steps: [None, int] = None,lr=None):
+                           n_f_steps: [None, int] = None, lr=None):
     os.makedirs(os.path.join('data', 'mnist_task_data'), exist_ok=True)
     os.makedirs(os.path.join('data', tag), exist_ok=True)
-    dir_name = f'd_{len(os.listdir(os.path.join("data", tag+"_"+"control" if homogeneous_lr else "heterogeneous")))}_{np.random.randint(0, 10000)}'
+    dir_name = f'd_{len(os.listdir(os.path.join("data", tag)))}_{np.random.randint(0, 10000)}'
+
     dest_path = os.path.join('data', tag, dir_name)
     os.makedirs(dest_path)
     data_dict = locals()
-    data_dict['dest_path']=dest_path
+    data_dict['dest_path'] = dest_path
     np.random.seed(seed_number)
 
-
-    f_m = build_model(model_hidden_sizes, homogeneous_lr, entropy_dependent_lr,data_dict['lr'])
+    f_m = build_model(model_hidden_sizes, homogeneous_lr, entropy_dependent_lr, data_dict['lr'])
     init_wandb(data_dict, f_m)
 
     p = run_permuted_mnist_task(f_m, n_task, batch_size, n_steps=n_steps, n_epochs=n_epochs, n_f_steps=n_f_steps,
@@ -192,8 +192,9 @@ import platform
 if __name__ == '__main__':
     get_args = lambda: dict(seed_number=random.randint(0, 100000), n_task=10, tag="test_basic_network", n_epochs=20,
                             n_f_epochs=50,
-                            entropy_dependent_lr=False, homogeneous_lr=True,lr=1e-2,
+                            entropy_dependent_lr=False, homogeneous_lr=True, lr=1e-2,
                             model_hidden_sizes=[20 * 20, 10 * 10, 5 * 5])
+
     if platform.system() == 'Windows':
         # save_matrix_and_params(**get_args())
         m = build_model(get_args()['model_hidden_sizes'], True, False)
@@ -206,7 +207,7 @@ if __name__ == '__main__':
     else:
         for i in range(10):
             args = get_args()
-
+            args['tag'] += "_" + "control" if args['homogeneous_lr'] else "heterogeneous"
             s = slurm_job.SlurmJobFactory('cluster_logs')
             args['homogeneous_lr'] = False
 
