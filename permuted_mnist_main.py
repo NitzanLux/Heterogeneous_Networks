@@ -105,19 +105,22 @@ def simple_train_and_evaluate(model, dataloader_train, data_loader_test, n_steps
     test(model, data_loader_test)
 
 
-def train_residual(model, dataloaders: List[PermutedMNIST], batch_size: int, n_steps: [None, int] = None,
+def train_residual(model, path, dataloaders: List[PermutedMNIST], batch_size: int, n_steps: [None, int] = None,
                    n_epochs: [None, int] = None, num_workers: int = 1, n_f_epochs: [None, int] = None,
-                   n_f_steps: [None, int] = None):
+                   n_f_steps: [None, int] = None, checkpoint=0):
     assert (not n_steps and n_epochs) or (
             not n_epochs and n_steps), "n_steps and n_epochs should be choose(independently)"
     print('start residual training...')
     counter = 0
-    for i, d in tqdm(zip([50] + [20] * (len(dataloaders) - 1), dataloaders)):
+    for i, d in tqdm(zip([50] + [20] * (len(dataloaders) - 1), dataloaders[checkpoint:])):
         train(model, d.get_dataloader(batch_size=batch_size, num_workers=num_workers, shuffle=True),
               PermutedMNIST(train=False, permute=d.permutation).get_dataloader(shuffle=True, batch_size=500)
               , n_epochs=n_epochs if i > 0 else n_f_epochs,
               n_steps=n_steps if i > 0 else n_f_steps, train_index=counter)
         counter += 1
+        model.save(path)
+        with open(os.path.join(path, 'checkpoint_step.p'), 'wb') as f:
+            pickle.dump(i, f)
         yield model
 
 
@@ -130,16 +133,15 @@ def evaluate_performance(model, dataloaders: List[PermutedMNIST], batch_size: in
     return accuracies
 
 
-def run_permuted_mnist_task(model, n_task: int, batch_size: int, n_steps: [None, int] = None,
+def run_permuted_mnist_task(model, path, dataloaders, n_task: int, batch_size: int, n_steps: [None, int] = None,
                             n_epochs: [None, int] = None, num_workers: int = 1, n_f_epochs: [None, int] = None,
-                            n_f_steps: [None, int] = None):
+                            n_f_steps: [None, int] = None, checkpoint=0):
     if n_f_steps is None and n_f_epochs is None:
         n_f_steps = n_steps
         n_f_epochs = n_f_epochs
-    dataloaders = [PermutedMNIST(train=True, permute=True if i > 0 else False) for i in range(n_task)]
     dataloaders_test = [PermutedMNIST(train=False, permute=i.permutation) for i in dataloaders]
-    tr = train_residual(model, dataloaders, batch_size, n_steps=n_steps, n_epochs=n_epochs,
-                        num_workers=num_workers, n_f_epochs=n_f_epochs, n_f_steps=n_f_steps)
+    tr = train_residual(model, path, dataloaders, batch_size, n_steps=n_steps, n_epochs=n_epochs,
+                        num_workers=num_workers, n_f_epochs=n_f_epochs, n_f_steps=n_f_steps, checkpoint=checkpoint)
     output_matrix = np.zeros((n_task, n_task))
     print("start evaluation")
     for i, m in tqdm(enumerate(tr)):
@@ -147,8 +149,8 @@ def run_permuted_mnist_task(model, n_task: int, batch_size: int, n_steps: [None,
     return output_matrix
 
 
-def build_model(model_hidden_sizes, homogeneous_lr, entropy_dependent_lr, lr):
-    f_m = CustomNetwork(28 * 28, model_hidden_sizes, 10, lr_arr=lr)
+def build_model(model_hidden_sizes, homogeneous_lr, entropy_dependent_lr, lr, input_size=28 * 28, number_of_classes=10):
+    f_m = CustomNetwork(input_size, model_hidden_sizes, number_of_classes, lr_arr=lr)
     f_m.init_weights()
     f_m.entropy_dependent_lr = entropy_dependent_lr
     f_m.homogeneous_lr = homogeneous_lr
@@ -160,28 +162,38 @@ def save_matrix_and_params(seed_number: int, entropy_dependent_lr=False, homogen
                            batch_size: int = 15, n_steps: [None, int] = None,
                            n_epochs: [None, int] = None, num_workers: int = 1,
                            model_hidden_sizes=(24 * 24, 10 * 10, 5 * 5), n_f_epochs: [None, int] = None,
-                           n_f_steps: [None, int] = None, lr=None):
+                           n_f_steps: [None, int] = None, lr=None, checkpoint=0):
     os.makedirs(os.path.join('data', 'mnist_task_data'), exist_ok=True)
     os.makedirs(os.path.join('data', tag), exist_ok=True)
     dir_name = f'd_{len(os.listdir(os.path.join("data", tag)))}_{np.random.randint(0, 10000)}'
-
     dest_path = os.path.join('data', tag, dir_name)
-    os.makedirs(dest_path)
+    os.makedirs(dest_path, exist_ok=True)
     data_dict = locals()
     data_dict['dest_path'] = dest_path
     np.random.seed(seed_number)
-
     f_m = build_model(model_hidden_sizes, homogeneous_lr, entropy_dependent_lr, data_dict['lr'])
+    if os.path.exists(os.path.join(dest_path, 'weights.pt')):
+        f_m.load_state_dict(torch.load(os.path.join(dest_path, 'weights.pt')))
     init_wandb(data_dict, f_m)
+    if os.path.exists(os.path.join(dest_path, 'permutation_array.pickle')):
+        with open(os.path.join(dest_path, 'permutation_array.pickle'), 'rb') as f:
+            permutations = pickle.load(f)
+        dataloaders = [PermutedMNIST(train=True, permute=True if i > 0 else i) for i in range(permutations)]
+    else:
+        dataloaders = [PermutedMNIST(train=True, permute=True if i > 0 else False) for i in range(n_task)]
+        permutations = [i.permutation for i in dataloaders]
+        with open(os.path.join(dest_path, f'permutation_array.pickle'), 'wb') as f:
+            pickle.dump(permutations, f)
+    if not os.path.exists(os.path.join(dest_path, f'config_dict.pickle')):
+        with open(os.path.join(dest_path, f'config_dict.pickle'), 'wb') as f:
+            pickle.dump(data_dict, f)
 
-    p = run_permuted_mnist_task(f_m, n_task, batch_size, n_steps=n_steps, n_epochs=n_epochs, n_f_steps=n_f_steps,
-                                n_f_epochs=n_f_epochs, num_workers=num_workers)
+    p = run_permuted_mnist_task(f_m, os.path.join(dest_path, 'weights.pt'), dataloaders, n_task, batch_size,
+                                n_steps=n_steps,
+                                n_epochs=n_epochs, n_f_steps=n_f_steps,
+                                n_f_epochs=n_f_epochs, num_workers=num_workers, checkpoint=checkpoint)
     with open(os.path.join(dest_path, 'performance_mat.p'), 'wb') as f:
         pickle.dump(p, f)
-    # data_dict = dict(seed_number=seed_number,entropy_dependent_lr=entropy_dependent_lr,homogeneous_lr=homogeneous_lr,tag=tag,n_task=n_task,
-    #                  batch_size=batch_size,n_steps=n_steps,n_epochs=n_epochs,num_workers=num_workers,model_hidden_sizes=model_hidden_sizes,n_f_steps=n_f_steps,n_f_epochs=n_f_epochs)
-    with open(os.path.join(dest_path, f'config_dict.pickle'), 'wb') as f:
-        pickle.dump(data_dict, f)
 
     return p
 
@@ -194,16 +206,15 @@ if __name__ == '__main__':
                             n_f_epochs=50,
                             entropy_dependent_lr=False, homogeneous_lr=True, lr=None,
                             model_hidden_sizes=[20 * 20, 10 * 10, 5 * 5])
-
     if platform.system() == 'Windows':
         # save_matrix_and_params(**get_args())
-        m = build_model(get_args()['model_hidden_sizes'], True, False,get_args()['lr'])
+        m = build_model(get_args()['model_hidden_sizes'], True, False, get_args()['lr'])
         args = get_args()
         args['dir_name'] = args['tag'] + '_' + str(args['seed_number'])
         init_wandb(args, m)
 
-        ts = simple_train_and_evaluate(m, PermutedMNIST(train=True).get_dataloader(100),
-                                       PermutedMNIST(train=False).get_dataloader(1000), 1000)
+        simple_train_and_evaluate(m, PermutedMNIST(train=True).get_dataloader(100),
+                                  PermutedMNIST(train=False).get_dataloader(1000), 1000)
     else:
         for i in range(10):
             args = get_args()
@@ -211,12 +222,12 @@ if __name__ == '__main__':
             s = slurm_job.SlurmJobFactory('cluster_logs')
 
             args['homogeneous_lr'] = False
-            args['lr']=None
+            args['lr'] = None
 
             s.send_job_for_function(f'{i}_first_validation_hetro', 'permuted_mnist_main', 'save_matrix_and_params',
                                     args, run_on_GPU=i < 3)
             args['homogeneous_lr'] = True
-            args['lr']=1e-2
+            args['lr'] = 1e-2
             s.send_job_for_function(f'{i}_first_validation_homogenuos', 'permuted_mnist_main', 'save_matrix_and_params',
                                     args, run_on_GPU=i < 3)
             print(i)

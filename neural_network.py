@@ -103,3 +103,6 @@ class CustomNetwork(nn.Module):
         out_one_hot = torch.zeros_like(out)
         out_one_hot[torch.argmax(out_one_hot)] = 1
         return out_one_hot
+    def save(self,path):
+        torch.save(model.state_dict(), path)
+
