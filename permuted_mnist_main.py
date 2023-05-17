@@ -248,7 +248,7 @@ if __name__ == '__main__':
             args['r']=r
             args['total_lr']=total_lr
 
-
+            print(total_lr)
             #homogeneous
             args['homogeneous_lr'] = False
             lr_arr=[]
