@@ -236,7 +236,7 @@ if __name__ == '__main__':
         s = slurm_job.SlurmJobFactory('cluster_logs')
         avarages = np.exp(-np.arange(15))
         ratios = np.arange(5,55,5)/100.
-        for j in range(30):
+        for j in range(10):
             ab = np.random.choice(avarages, 2, replace=False)
             a,b=np.min(ab) ,np.max(ab)
             r = np.random.choice(ratios, 1, replace=False)
