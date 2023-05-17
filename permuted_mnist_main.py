@@ -214,9 +214,19 @@ if __name__ == '__main__':
                             model_hidden_sizes=[20 * 20, 10 * 10, 10 * 5],input_size=28 * 28, number_of_classes=10)
     if platform.system() == 'Windows':
         # save_matrix_and_params(**get_args())
-        m = build_model(get_args()['model_hidden_sizes'], True, False, get_args()['lr'])
         args = get_args()
         args['dir_name'] = args['tag'] + '_' + str(args['seed_number'])
+        avarages = np.exp(-np.arange(15))
+        ratios = np.arange(5,55,5)/100.
+        ab = np.random.choice(avarages, 2, replace=False)
+        a,b=np.min(ab) ,np.max(ab)
+        r = np.random.choice(ratios, 1, replace=False)
+        lr_arr=[]
+        args['homogeneous_lr'] = True
+        for i in args['model_hidden_sizes'] + [args['number_of_classes']]:
+            lr_arr.append(([b] * int(i * r) + [a] * (i - int(i * r))))
+        args['lr'] = lr_arr
+        m = build_model(get_args()['model_hidden_sizes'], False, False, lr = get_args()['lr'])
         init_wandb(args, m)
 
         simple_train_and_evaluate(m, PermutedMNIST(train=True).get_dataloader(100),
@@ -233,7 +243,7 @@ if __name__ == '__main__':
             args = get_args()
 
             #homogeneous
-            args['homogeneous_lr'] = True
+            args['homogeneous_lr'] = False
             lr_arr=[]
             for i in args['model_hidden_sizes']+[args['number_of_classes']]:
                 lr_arr.append(([b]*int(i*r)+[a]*(i-int(i*r))))
@@ -242,7 +252,7 @@ if __name__ == '__main__':
                                     args, run_on_GPU=j < 3)
 
             #control
-            args['homogeneous_lr'] = False
+            args['homogeneous_lr'] = True
             args['lr'] = total_lr
 
             s.send_job_for_function(f'{j}_first_validation_hetro', 'permuted_mnist_main', 'save_matrix_and_params',
