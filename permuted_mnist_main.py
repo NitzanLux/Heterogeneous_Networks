@@ -239,14 +239,14 @@ if __name__ == '__main__':
         for j in range(1):
             ab = np.random.choice(avarages, 2, replace=False)
             a,b=np.min(ab) ,np.max(ab)
-            r = np.random.choice(ratios, 1, replace=False)
+            r = np.random.choice(ratios, 1, replace=False)[0]
             total_lr = r*b+(1.-r)*a
             args = get_args()
 
             args['a']=a
             args['b']=b
-            args['r']=r[0]
-            args['total_lr']=total_lr[0]
+            args['r']=r
+            args['total_lr']=total_lr
 
             print(total_lr,a,b,r)
             #homogeneous
