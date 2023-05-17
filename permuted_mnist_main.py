@@ -170,7 +170,7 @@ def save_matrix_and_params(seed_number: int, torch_seed_number:int,entropy_depen
                            batch_size: int = 15, n_steps: [None, int] = None,
                            n_epochs: [None, int] = None, num_workers: int = 1,
                            model_hidden_sizes=(24 * 24, 10 * 10, 5 * 5), n_f_epochs: [None, int] = None,
-                           n_f_steps: [None, int] = None, lr=None, checkpoint=0,input_size=28 * 28, number_of_classes=10):
+                           n_f_steps: [None, int] = None, lr=None, checkpoint=0,input_size=28 * 28, number_of_classes=10,**kwargs):
     os.makedirs(os.path.join('data', 'mnist_task_data'), exist_ok=True)
     os.makedirs(os.path.join('data', tag), exist_ok=True)
     dir_name = f'd_{len(os.listdir(os.path.join("data", tag)))}_{np.random.randint(0, 10000)}'
@@ -226,7 +226,8 @@ if __name__ == '__main__':
         for i in args['model_hidden_sizes'] + [args['number_of_classes']]:
             lr_arr.append(([b] * int(i * r) + [a] * (i - int(i * r))))
         args['lr'] = lr_arr
-        m = build_model(get_args()['model_hidden_sizes'], False, False, lr = get_args()['lr'])
+        args['lr'] = 1e-3
+        m = build_model(get_args()['model_hidden_sizes'], False, False, lr = args['lr'])
         init_wandb(args, m)
 
         simple_train_and_evaluate(m, PermutedMNIST(train=True).get_dataloader(100),
@@ -241,6 +242,12 @@ if __name__ == '__main__':
             r = np.random.choice(ratios, 1, replace=False)
             total_lr = r*b+(1.-r)*a
             args = get_args()
+
+            args['a']=a
+            args['b']=b
+            args['r']=r
+            args['total_lr']=total_lr
+
 
             #homogeneous
             args['homogeneous_lr'] = False
