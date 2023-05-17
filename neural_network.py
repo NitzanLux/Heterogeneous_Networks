@@ -58,9 +58,8 @@ class CustomNetwork(nn.Module):
             # assert (isinstance(lr_arr, float)) or (all([len(lr) == h for lr, h in zip(lr_arr, hidden_sizes + [output_size])])), "number of lr should be congurent"
             # assert False
         float_flag=False
-        if not isinstance(lr_arr,Iterable):
-            if not lr_arr is None:
-                float_flag=True
+        if not isinstance(lr_arr,Iterable) and not lr_arr is None:
+            float_flag=True
         self.lr = lr_arr if float_flag else 0.
         self.lr_arr = None if float_flag else lr_arr
         print(self.lr_arr)

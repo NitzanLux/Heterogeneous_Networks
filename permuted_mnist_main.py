@@ -225,7 +225,7 @@ if __name__ == '__main__':
         args['homogeneous_lr'] = True
         for i in args['model_hidden_sizes'] + [args['number_of_classes']]:
             lr_arr.append(([b] * int(i * r) + [a] * (i - int(i * r))))
-        args['lr'] = lr_arr
+        # args['lr'] = lr_arr
         args['lr'] = 1e-3
         m = build_model(get_args()['model_hidden_sizes'], False, False, lr = args['lr'])
         init_wandb(args, m)
