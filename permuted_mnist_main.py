@@ -216,7 +216,7 @@ if __name__ == '__main__':
         # save_matrix_and_params(**get_args())
         args = get_args()
         args['dir_name'] = args['tag'] + '_' + str(args['seed_number'])
-        avarages = np.exp(-np.arange(15))
+        avarages = 1./np.power(10,np.arange(15))
         ratios = np.arange(5,55,5)/100.
         ab = np.random.choice(avarages, 2, replace=False)
         a,b=np.min(ab) ,np.max(ab)
@@ -236,7 +236,7 @@ if __name__ == '__main__':
         s = slurm_job.SlurmJobFactory('cluster_logs')
         avarages = np.exp(-np.arange(15))
         ratios = np.arange(5,55,5)/100.
-        for j in range(1):
+        for j in range(30):
             ab = np.random.choice(avarages, 2, replace=False)
             a,b=np.min(ab) ,np.max(ab)
             r = np.random.choice(ratios, 1, replace=False)[0]
@@ -256,13 +256,13 @@ if __name__ == '__main__':
                 lr_arr.append(([b]*int(i*r)+[a]*(i-int(i*r))))
             args['lr']=lr_arr
             s.send_job_for_function(f'{j}_first_validation_hetro', 'permuted_mnist_main', 'save_matrix_and_params',
-                                    args, run_on_GPU=j > 3)
+                                    args, run_on_GPU=j < 3)
 
             #control
             args['homogeneous_lr'] = True
             args['lr'] = total_lr
 
             s.send_job_for_function(f'{j}_first_validation_homogenous', 'permuted_mnist_main', 'save_matrix_and_params',
-                                    args, run_on_GPU=j > 3)
+                                    args, run_on_GPU=j < 3)
             print(j)
         # print(p)
