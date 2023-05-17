@@ -73,7 +73,7 @@ def train(model, data_loader, test_dataloader, n_steps: [None, int] = None, n_ep
 
                 d_input = d_input.to(device)
                 target = target.to(device)
-                wandb.log({'testing_accuracy_%d' % train_index: evaluation_score(model(d_input), target)})
+                wandb.log({'testing_accuracy_%d' % train_index: evaluation_score(model(d_input), target)}, commit=False)
             model.train()
 
             if n_steps is not None:
@@ -127,7 +127,7 @@ def evaluate_performance(model, dataloaders: List[PermutedMNIST], batch_size: in
     accuracies = []
     for d in dataloaders:
         accuracies.append(test(model, d.get_dataloader(batch_size=batch_size), n_samples=n_samples))
-        wandb.log({'accuracies_residual': accuracies[-1]})
+        wandb.log({'accuracies_residual': accuracies[-1]}, commit=False)
     print(accuracies)
     return accuracies
 
@@ -180,7 +180,7 @@ def save_matrix_and_params(seed_number: int, torch_seed_number:int,entropy_depen
     data_dict['dest_path'] = dest_path
     np.random.seed(seed_number)
     torch.manual_seed(torch_seed_number)
-    f_m = build_model(model_hidden_sizes, homogeneous_lr, entropy_dependent_lr, data_dict['lr'],input_size=28 * 28, number_of_classes=10)
+    f_m = build_model(model_hidden_sizes, homogeneous_lr, entropy_dependent_lr, lr=data_dict['lr'],input_size=28 * 28, number_of_classes=10)
     if os.path.exists(os.path.join(dest_path, 'weights.pt')):
         f_m.load_state_dict(torch.load(os.path.join(dest_path, 'weights.pt')))
     init_wandb(data_dict, f_m)

@@ -59,7 +59,7 @@ class CustomNetwork(nn.Module):
             # assert False
         self.lr = lr_arr if isinstance(lr_arr, float) else 0.
         self.lr_arr = None if isinstance(lr_arr, float) else lr_arr
-
+        print(self.lr_arr)
         for i,hs in enumerate(hidden_sizes):
             # self.layers.append(CustomLayer(last_layer, i,np.random.random((i,))))
             self.layers.append(CustomLayer(last_layer, hs,lr=self.lr_arr if not isinstance(self.lr_arr,list) else self.lr_arr[i]))
