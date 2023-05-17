@@ -119,8 +119,7 @@ def train_residual(model, path, dataloaders: List[PermutedMNIST], batch_size: in
               n_steps=n_steps if i > 0 else n_f_steps, train_index=counter)
         counter += 1
         model.save(path)
-        with open(os.path.join(path, 'checkpoint_step.p'), 'wb') as f:
-            pickle.dump(i, f)
+
         yield model
 
 
@@ -142,10 +141,19 @@ def run_permuted_mnist_task(model, path, dataloaders, n_task: int, batch_size: i
     dataloaders_test = [PermutedMNIST(train=False, permute=i.permutation) for i in dataloaders]
     tr = train_residual(model, path, dataloaders, batch_size, n_steps=n_steps, n_epochs=n_epochs,
                         num_workers=num_workers, n_f_epochs=n_f_epochs, n_f_steps=n_f_steps, checkpoint=checkpoint)
-    output_matrix = np.zeros((n_task, n_task))
+    if os.path.exists(os.path.join(path, 'performance_mat.p')):
+        with open(os.path.join(path, 'performance_mat.p'), 'rb') as f:
+            output_matrix = pickle.load(f)
+    else:
+        output_matrix = np.zeros((n_task, n_task))
     print("start evaluation")
     for i, m in tqdm(enumerate(tr)):
+        i = i + checkpoint
         output_matrix[i, :i + 1] = evaluate_performance(m, dataloaders_test[:i + 1], 10000, 5)
+        with open(os.path.join(path, 'checkpoint_step.pickle'), 'wb') as f:
+            pickle.dump(i, f)
+        with open(os.path.join(path, 'performance_mat.p'), 'wb') as f:
+            pickle.dump(output_matrix, f)
     return output_matrix
 
 
@@ -158,11 +166,11 @@ def build_model(model_hidden_sizes, homogeneous_lr, entropy_dependent_lr, lr, in
     return f_m
 
 
-def save_matrix_and_params(seed_number: int, entropy_dependent_lr=False, homogeneous_lr=True, tag='', n_task: int = 10,
+def save_matrix_and_params(seed_number: int, torch_seed_number:int,entropy_dependent_lr=False, homogeneous_lr=True, tag='', n_task: int = 10,
                            batch_size: int = 15, n_steps: [None, int] = None,
                            n_epochs: [None, int] = None, num_workers: int = 1,
                            model_hidden_sizes=(24 * 24, 10 * 10, 5 * 5), n_f_epochs: [None, int] = None,
-                           n_f_steps: [None, int] = None, lr=None, checkpoint=0):
+                           n_f_steps: [None, int] = None, lr=None, checkpoint=0,input_size=28 * 28, number_of_classes=10):
     os.makedirs(os.path.join('data', 'mnist_task_data'), exist_ok=True)
     os.makedirs(os.path.join('data', tag), exist_ok=True)
     dir_name = f'd_{len(os.listdir(os.path.join("data", tag)))}_{np.random.randint(0, 10000)}'
@@ -171,7 +179,8 @@ def save_matrix_and_params(seed_number: int, entropy_dependent_lr=False, homogen
     data_dict = locals()
     data_dict['dest_path'] = dest_path
     np.random.seed(seed_number)
-    f_m = build_model(model_hidden_sizes, homogeneous_lr, entropy_dependent_lr, data_dict['lr'])
+    torch.manual_seed(torch_seed_number)
+    f_m = build_model(model_hidden_sizes, homogeneous_lr, entropy_dependent_lr, data_dict['lr'],input_size=28 * 28, number_of_classes=10)
     if os.path.exists(os.path.join(dest_path, 'weights.pt')):
         f_m.load_state_dict(torch.load(os.path.join(dest_path, 'weights.pt')))
     init_wandb(data_dict, f_m)
@@ -188,13 +197,10 @@ def save_matrix_and_params(seed_number: int, entropy_dependent_lr=False, homogen
         with open(os.path.join(dest_path, f'config_dict.pickle'), 'wb') as f:
             pickle.dump(data_dict, f)
 
-    p = run_permuted_mnist_task(f_m, os.path.join(dest_path, 'weights.pt'), dataloaders, n_task, batch_size,
+    p = run_permuted_mnist_task(f_m, dest_path, dataloaders, n_task, batch_size,
                                 n_steps=n_steps,
                                 n_epochs=n_epochs, n_f_steps=n_f_steps,
                                 n_f_epochs=n_f_epochs, num_workers=num_workers, checkpoint=checkpoint)
-    with open(os.path.join(dest_path, 'performance_mat.p'), 'wb') as f:
-        pickle.dump(p, f)
-
     return p
 
 
@@ -202,10 +208,10 @@ import random
 import platform
 
 if __name__ == '__main__':
-    get_args = lambda: dict(seed_number=random.randint(0, 100000), n_task=10, tag="test_basic_network", n_epochs=20,
-                            n_f_epochs=50,
+    get_args = lambda: dict(seed_number=42,torch_seed_number=28, n_task=6, tag="swip_multiple_parameters", n_epochs=10,
+                            n_f_epochs=30,
                             entropy_dependent_lr=False, homogeneous_lr=True, lr=None,
-                            model_hidden_sizes=[20 * 20, 10 * 10, 5 * 5])
+                            model_hidden_sizes=[20 * 20, 10 * 10, 10 * 5],input_size=28 * 28, number_of_classes=10)
     if platform.system() == 'Windows':
         # save_matrix_and_params(**get_args())
         m = build_model(get_args()['model_hidden_sizes'], True, False, get_args()['lr'])
@@ -216,19 +222,30 @@ if __name__ == '__main__':
         simple_train_and_evaluate(m, PermutedMNIST(train=True).get_dataloader(100),
                                   PermutedMNIST(train=False).get_dataloader(1000), 1000)
     else:
-        for i in range(10):
+        s = slurm_job.SlurmJobFactory('cluster_logs')
+        avarages = np.exp(-np.arange(15))
+        ratios = np.arange(5,55,5)/100.
+        for i in range(20):
+            ab = np.random.choice(avarages, 2, replace=False)
+            a,b=np.min(ab) ,np.max(ab)
+            r = np.random.choice(ratios, 1, replace=False)
+            total_lr = r*b+(1.-r)*a
             args = get_args()
-            args['tag'] += "_" + "control" if args['homogeneous_lr'] else "heterogeneous"
-            s = slurm_job.SlurmJobFactory('cluster_logs')
 
+            #homogeneous
+            args['homogeneous_lr'] = True
+            lr_arr=[]
+            for i in args['model_hidden_sizes']+[args['number_of_classes']]:
+                lr_arr.append(([b]*int(i*r)+[a]*(i-int(i*r))))
+            args['lr']=lr_arr
+            s.send_job_for_function(f'{i}_first_validation_homogenuos', 'permuted_mnist_main', 'save_matrix_and_params',
+                                    args, run_on_GPU=i < 3)
+
+            #control
             args['homogeneous_lr'] = False
-            args['lr'] = None
+            args['lr'] = total_lr
 
             s.send_job_for_function(f'{i}_first_validation_hetro', 'permuted_mnist_main', 'save_matrix_and_params',
-                                    args, run_on_GPU=i < 3)
-            args['homogeneous_lr'] = True
-            args['lr'] = 1e-2
-            s.send_job_for_function(f'{i}_first_validation_homogenuos', 'permuted_mnist_main', 'save_matrix_and_params',
                                     args, run_on_GPU=i < 3)
             print(i)
         # print(p)
