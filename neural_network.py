@@ -57,8 +57,12 @@ class CustomNetwork(nn.Module):
             # assert (homogeneous_lr and isinstance(lr_arr, float)) or (all([len(lr) == h for lr,h in zip(lr_arr, hidden_sizes + [output_size])])), "number of lr should be congurent"
             # assert (isinstance(lr_arr, float)) or (all([len(lr) == h for lr, h in zip(lr_arr, hidden_sizes + [output_size])])), "number of lr should be congurent"
             # assert False
-        self.lr = lr_arr if isinstance(lr_arr, float) else 0.
-        self.lr_arr = None if isinstance(lr_arr, float) else lr_arr
+        float_flag=False
+        if not isinstance(lr_arr,Iterable):
+            if not lr_arr is None:
+                float_flag=True
+        self.lr = lr_arr if float_flag else 0.
+        self.lr_arr = None if float_flag else lr_arr
         print(self.lr_arr)
         for i,hs in enumerate(hidden_sizes):
             # self.layers.append(CustomLayer(last_layer, i,np.random.random((i,))))
