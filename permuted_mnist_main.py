@@ -234,7 +234,7 @@ if __name__ == '__main__':
                                   PermutedMNIST(train=False).get_dataloader(1000), 1000)
     else:
         s = slurm_job.SlurmJobFactory('cluster_logs')
-        avarages = np.exp(-np.arange(15))
+        avarages = 1./np.power(10,np.arange(15))
         ratios = np.arange(5,55,5)/100.
         for j in range(30):
             ab = np.random.choice(avarages, 2, replace=False)
