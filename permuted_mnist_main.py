@@ -243,12 +243,12 @@ if __name__ == '__main__':
             total_lr = r*b+(1.-r)*a
             args = get_args()
 
-            args['a']=a
-            args['b']=b
-            args['r']=r
-            args['total_lr']=total_lr
+            args['a']=a[0]
+            args['b']=b[0]
+            args['r']=r[0]
+            args['total_lr']=total_lr[0]
 
-            print(total_lr)
+            print(total_lr,a,b,r)
             #homogeneous
             args['homogeneous_lr'] = False
             lr_arr=[]
