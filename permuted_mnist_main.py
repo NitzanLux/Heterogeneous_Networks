@@ -245,7 +245,7 @@ if __name__ == '__main__':
 
             args['a']=a
             args['b']=b
-            args['r']=r
+            args['r']=r[0]
             args['total_lr']=total_lr[0]
 
             print(total_lr,a,b,r)
