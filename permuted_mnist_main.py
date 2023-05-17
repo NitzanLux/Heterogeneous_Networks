@@ -248,14 +248,14 @@ if __name__ == '__main__':
             for i in args['model_hidden_sizes']+[args['number_of_classes']]:
                 lr_arr.append(([b]*int(i*r)+[a]*(i-int(i*r))))
             args['lr']=lr_arr
-            s.send_job_for_function(f'{j}_first_validation_homogenuos', 'permuted_mnist_main', 'save_matrix_and_params',
+            s.send_job_for_function(f'{j}_first_validation_hetro', 'permuted_mnist_main', 'save_matrix_and_params',
                                     args, run_on_GPU=j < 3)
 
             #control
             args['homogeneous_lr'] = True
             args['lr'] = total_lr
 
-            s.send_job_for_function(f'{j}_first_validation_hetro', 'permuted_mnist_main', 'save_matrix_and_params',
+            s.send_job_for_function(f'{j}_first_validation_homogenous', 'permuted_mnist_main', 'save_matrix_and_params',
                                     args, run_on_GPU=j < 3)
             print(j)
         # print(p)
