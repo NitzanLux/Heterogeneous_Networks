@@ -26,6 +26,6 @@ parser.add_argument('r_str', type=str, help='The regular expression to match fol
 args = parser.parse_args()
 
 data_folder = "data"
-files_to_zip = ["config_dict.pickle", "performance_mat.p"]
+files_to_zip = ["config_dict.pickle", "performance_mat.p","checkpoint_step.pickle"]
 
 zip_matching_folders(data_folder, args.r_str, files_to_zip)
