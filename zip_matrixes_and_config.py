@@ -18,7 +18,7 @@ def zip_matching_folders(data_folder, r_str, files_to_zip):
                                     for file in files:
                                         if file in files_to_zip:
                                             abs_path = os.path.join(sub_sub_folder, file)
-                                            zipf.write(abs_path, os.path.relpath(abs_path))
+                                            zipf.write(abs_path, os.path.join(sub_dir,file))
 
 parser = argparse.ArgumentParser(description='Process some strings.')
 parser.add_argument('r_str', type=str, help='The regular expression to match folder names')
