@@ -11,7 +11,7 @@ def zip_matching_folders(data_folder, r_str, files_to_zip):
                 for _, sub_dirs, _ in os.walk(sub_folder):
                     for sub_dir in sub_dirs:
                         sub_sub_folder = os.path.join(str(sub_folder), str(sub_dir))
-                        zip_path = f"{sub_sub_folder}.zip"
+                        zip_path = f"{sub_folder}.zip"
                         with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
                             for _, _, files in os.walk(sub_sub_folder):
                                 for file in files:
