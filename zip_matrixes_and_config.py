@@ -8,10 +8,10 @@ def zip_matching_folders(data_folder, r_str, files_to_zip):
         for dir in dirs:
             if re.match(r_str, dir):
                 sub_folder = os.path.join(root, str(dir))
-                for sub_dir in os.walk(sub_folder):
+                for _, sub_dir, _ in os.walk(sub_folder):
                     zip_path = f"{sub_folder}/{sub_dir}.zip"
                     with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                        sub_sub_folder = os.path.join(str(sub_folder),str(sub_dir))
+                        sub_sub_folder = os.path.join(sub_folder, sub_dir)
                         for _, _, files in os.walk(sub_sub_folder):
                             for file in files:
                                 if file in files_to_zip:
