@@ -212,15 +212,17 @@ def evaluate(data_dict,input_size,hidden_size,output_size, length=20000, batch_s
     return data_dict
 
 
-cd = CDataLoader(500, mask_d=0.5, disperssion=10, n_batch=20000, normal_sampling=False)
-cd.plot_data(*cd.generate_first_rule_data(),500)
-cd.plot_data(*cd.generate_second_rule_data(),500)
-cd.plot_data(n=500)
-cd.plot_data()
+# cd = CDataLoader(500, mask_d=0.5, disperssion=10, n_batch=20000, normal_sampling=False)
+# cd.plot_data(*cd.generate_first_rule_data(),500)
+# cd.plot_data(*cd.generate_second_rule_data(),500)
+# cd.plot_data(n=500)
+# cd.plot_data()
 tag='custome immidiate response'
 data_dict = dict(steps_1=[], steps_2=[], auc_1=[], auc_2=[], auc_forget=[], index=[], id=[],
                      accuracy_1=[], accuracy_2=[], accuracy_forget=[],hidden_size=[],batch_size=[],tag=[])
-evaluate(data_dict,2,hidden_size,output_layer, batch_size=100, train_to_thresh=False, length=20000,mask_d=0.5, disperssion=10,index=0,tag=tag)
+# def evaluate_on_cluster_debug():
+
+    # evaluate(data_dict,2,hidden_size,output_layer, batch_size=100, train_to_thresh=False, length=20000,mask_d=0.5, disperssion=10,index=0,tag=tag)
 def evaluate_on_cluster(data_folder,simulation_id,number_of_sims):
     data_dict = dict(steps_1=[], steps_2=[], auc_1=[], auc_2=[], auc_forget=[], index=[], id=[],
                      accuracy_1=[], accuracy_2=[], accuracy_forget=[],hidden_size=[],batch_size=[],tag=[])
@@ -234,3 +236,9 @@ def evaluate_on_cluster(data_folder,simulation_id,number_of_sims):
     os.makedirs(cur_path,exist_ok=True)
     with open(os.path.join(cur_path,f'data_{tag}_{simulation_id}.p'), 'wb') as fp:
         pickle.dump(data_dict, fp, protocol=pickle.HIGHEST_PROTOCOL)
+if __name__ == '__main__':
+    s = slurm_job.SlurmJobFactory('cluster_logs')
+    # s = slurm_job.SlurmJobFactory('cluster_logs')
+    j = np.random.randint(0,1e+9)
+    s.send_job_for_function(f'{j}_debug_freeze', 'half_freeze_network', 'evaluate_on_cluster',
+                            [], run_on_GPU=True)
